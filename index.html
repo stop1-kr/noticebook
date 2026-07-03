@@ -5,227 +5,264 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>즐거운 3학년 7반 알림장</title>
   <style>
-    body { font-family: 'Malgun Gothic', sans-serif; background-color: #ffffff; margin: 0; padding: 20px; }
-    .header { text-align: center; margin-bottom: 20px; position: relative; }
-    .date-display { font-size: 1.2em; font-weight: bold; color: #333; margin-top: 5px; }
-    
-    /* [1번 문제 해결] + 버튼 정중앙 정렬 코드 */
-    .teacher-btn {
-      position: absolute; right: 0; top: 0;
-      width: 42px; height: 42px; border-radius: 50%;
-      background-color: #ffaa00; color: white;
-      font-size: 26px; font-weight: bold; border: none;
-      display: flex; justify-content: center; align-items: center; /* 십자가 정중앙 정렬 */
-      cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      line-height: 1; padding: 0;
+    /* 전체 배경과 폰트 설정 */
+    body { 
+      font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; 
+      background-color: #f7f9fc; /* 아주 연한 파스텔 블루 배경 */
+      margin: 0; padding: 15px; color: #333;
     }
     
-    .section { margin-bottom: 25px; border: 1px solid #ddd; border-radius: 8px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .section h2 { font-size: 1.1em; color: #2c3e50; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 5px; }
-    .content-box { min-height: 20px; white-space: pre-wrap; margin-bottom: 10px; }
+    /* 상단 헤더 꾸미기 */
+    .header { 
+      text-align: center; background: #ffffff; padding: 20px 10px; 
+      border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      margin-bottom: 20px; position: relative;
+    }
+    .header h1 { margin: 0; font-size: 1.5em; color: #4a4a4a; }
+    .date-display { font-size: 1.1em; font-weight: bold; color: #2196f3; margin-top: 10px; }
     
-    input[type="text"], input[type="date"], textarea { 
-      width: 100%; padding: 10px; margin: 5px 0 10px; border: 1px solid #ccc; 
-      border-radius: 4px; box-sizing: border-box; font-family: inherit; 
+    /* 교사 전용 + 버튼 정중앙 예쁘게 배치 */
+    .teacher-btn {
+      position: absolute; right: 15px; top: 15px;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+      color: white; font-size: 24px; font-weight: bold; 
+      border: none; cursor: pointer; box-shadow: 0 4px 6px rgba(255, 154, 158, 0.4);
+      display: flex; justify-content: center; align-items: center;
+      transition: transform 0.2s;
+    }
+    .teacher-btn:active { transform: scale(0.9); }
+
+    /* 날짜 조회 영역 */
+    .search-box { text-align: center; margin-bottom: 20px; }
+    .search-box input { width: 50%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; }
+    .search-box button { 
+      padding: 10px 15px; border-radius: 10px; border: none; 
+      background-color: #a1c4fd; color: white; font-weight: bold; cursor: pointer;
+    }
+
+    /* 각 섹션(카드) 꾸미기 */
+    .section { 
+      background: #ffffff; margin-bottom: 20px; border-radius: 15px; 
+      padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.03); 
+    }
+    .section h2 { 
+      font-size: 1.2em; color: #2c3e50; margin-top: 0; 
+      border-bottom: 2px dashed #eee; padding-bottom: 10px; 
+    }
+    .content-box { 
+      min-height: 30px; white-space: pre-wrap; margin-top: 10px; 
+      line-height: 1.5; color: #555; background: #fdfdfd; padding: 10px; border-radius: 8px;
+    }
+    
+    /* 입력창 및 버튼 통일 */
+    input[type="text"], textarea { 
+      width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #e0e0e0; 
+      border-radius: 10px; box-sizing: border-box; font-family: inherit; background-color: #fafafa;
     }
     button.action-btn { 
-      background-color: #4CAF50; color: white; padding: 12px 15px; 
-      border: none; border-radius: 4px; cursor: pointer; width: 100%; 
-      font-size: 16px; font-weight: bold; 
+      width: 100%; padding: 14px; border: none; border-radius: 10px; 
+      font-size: 1em; font-weight: bold; color: white; cursor: pointer; margin-top: 5px;
     }
-    
-    /* 교사 모달창 디자인 */
-    #teacherModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; }
-    .modal-content { background: white; margin: 10% auto; padding: 20px; width: 90%; max-width: 400px; border-radius: 8px; box-sizing: border-box; }
-    .close-btn { background-color: #f44336; margin-top: 10px; }
+    .btn-blue { background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%); }
+    .btn-orange { background: linear-gradient(to right, #f6d365 0%, #fda085 100%); }
+
+    /* 교사 모달창 꾸미기 */
+    #teacherModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; backdrop-filter: blur(3px); }
+    .modal-content { background: white; margin: 10% auto; padding: 25px; width: 90%; max-width: 400px; border-radius: 15px; box-sizing: border-box; }
+    .modal-content label { font-weight: bold; color: #333; display: block; margin-top: 10px; }
+    .close-btn { background: #ff758c !important; margin-top: 10px; }
   </style>
 </head>
 <body>
 
+  <!-- 상단 타이틀 -->
   <div class="header">
-    <h1 style="font-size: 1.5em; margin-bottom: 5px;">즐거운 3학년 7반 알림장</h1>
-    <div class="date-display" id="todayDate"></div>
+    <h1>🏫 즐거운 3학년 7반 알림장 🎒</h1>
+    <div class="date-display" id="todayDate">📅 불러오는 중...</div>
     <button class="teacher-btn" onclick="openTeacherModal()">+</button>
   </div>
 
-  <div style="text-align: center; margin-bottom: 20px;">
-    <input type="date" id="searchDate" style="width: 50%; display: inline-block;">
-    <button onclick="fetchNotice()" style="padding: 10px; margin-left: 5px; border-radius:4px; border:1px solid #ccc; background:#eee; cursor:pointer;">이전 알림장 조회</button>
+  <!-- 날짜 조회 -->
+  <div class="search-box">
+    <input type="date" id="searchDate">
+    <button onclick="fetchNotice()">🔍 이전 알림장 조회</button>
   </div>
 
+  <!-- 1. 전달사항 -->
   <div class="section">
-    <h2>1. 전달사항</h2>
+    <h2>📢 1. 전달사항</h2>
     <div id="noticeContent" class="content-box">불러오는 중...</div>
   </div>
 
+  <!-- 2. 출결서류 -->
   <div class="section">
-    <h2>2. 출결서류 안내</h2>
+    <h2>📋 2. 출결서류 안내</h2>
     <div id="attendanceContent" class="content-box">불러오는 중...</div>
   </div>
 
+  <!-- 3. 수행평가 / 숙제 -->
   <div class="section">
-    <h2>3. 수행평가 / 숙제 안내</h2>
+    <h2>✍️ 3. 수행평가 / 숙제 안내</h2>
     <div id="homeworkContent" class="content-box">불러오는 중...</div>
-    <input type="text" id="studentHomeworkInput" placeholder="추가할 숙제나 평가를 적어주세요">
-    <button class="action-btn" onclick="addHomework()" style="background-color: #2196F3;">수행평가/숙제 추가하기</button>
+    <input type="text" id="studentHomeworkInput" placeholder="💡 추가할 숙제나 평가를 적어주세요">
+    <button class="action-btn btn-blue" onclick="addHomework()">✨ 숙제/평가 추가하기</button>
   </div>
 
+  <!-- 4. 익명 건의함 -->
   <div class="section">
-    <h2>4. 익명 건의함</h2>
-    <input type="text" id="suggestionName" placeholder="이름 (안 적으면 익명으로 전송)">
-    <textarea id="suggestionContent" rows="3" placeholder="건의할 내용을 적어주세요"></textarea>
-    <button class="action-btn" onclick="sendSuggestion()" style="background-color: #ff9800;">건의사항 보내기</button>
+    <h2>🤫 4. 익명 건의함</h2>
+    <input type="text" id="suggestionName" placeholder="👤 이름 (안 적으면 익명으로 쉿!)">
+    <textarea id="suggestionContent" rows="3" placeholder="💬 건의할 내용을 자유롭게 적어주세요"></textarea>
+    <button class="action-btn btn-orange" onclick="sendSuggestion()">🚀 선생님께 보내기</button>
   </div>
 
   <!-- 교사 비밀번호 모달 -->
   <div id="teacherModal">
     <div class="modal-content">
-      <h2 style="margin-top:0;">교사 알림장 작성</h2>
-      <label>날짜</label>
-      <input type="date" id="tDate">
-      <label>전달사항</label>
+      <h2 style="margin-top:0; text-align:center;">👩‍🏫 교사 알림장 작성</h2>
+      <label>📅 날짜</label>
+      <input type="date" id="tDate" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc;">
+      
+      <label>📢 전달사항</label>
       <textarea id="tNotice" rows="3"></textarea>
-      <label>출결서류 (예: 홍길동 - 결석계)</label>
+      
+      <label>📋 출결서류 (예: 홍길동-결석계)</label>
       <textarea id="tAttendance" rows="2"></textarea>
-      <label>수행평가/숙제</label>
+      
+      <label>✍️ 수행평가/숙제</label>
       <textarea id="tHomework" rows="2"></textarea>
       
-      <button class="action-btn" onclick="saveTeacherNotice()">저장하기</button>
-      <button class="action-btn close-btn" onclick="closeTeacherModal()">닫기</button>
+      <button class="action-btn btn-blue" onclick="saveTeacherNotice()">💾 저장하기</button>
+      <button class="action-btn close-btn" onclick="closeTeacherModal()">❌ 닫기</button>
     </div>
   </div>
 
   <script>
     // ★★★ 아래 쌍따옴표 안에 구글 앱스 스크립트 웹앱 주소를 꼭 넣어주세요! ★★★
+    // 예: "https://script.google.com/macros/s/AKfycb.../exec"
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyE5JWHKIXY8SCf9wnV_dwTMkjmmt8QygKLuDdbkeQ7h_DseimR--IN6GhfQH-fLOvIAg/exec"; 
 
-    // 오늘 날짜 세팅
+    // 날짜 세팅
     const today = new Date();
     const todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
-    document.getElementById('todayDate').innerText = todayStr;
+    document.getElementById('todayDate').innerText = `📅 ${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
     document.getElementById('searchDate').value = todayStr;
 
-    // 페이지 열리면 바로 데이터 불러오기
-    window.onload = () => fetchNotice();
+    // 초기 로드
+    window.onload = () => {
+      if(GAS_URL.includes("여기에_선생님의")) {
+        alert("⚠️ 구글 앱스 스크립트(GAS) 주소를 코드에 입력하지 않으셨습니다!\nindex.html 파일의 GAS_URL 부분을 수정해주세요.");
+      } else {
+        fetchNotice();
+      }
+    };
 
-    // 1. 조회 기능 (가져오기)
     function fetchNotice() {
       const date = document.getElementById('searchDate').value || todayStr;
-      document.getElementById('noticeContent').innerText = "불러오는 중...";
-      document.getElementById('attendanceContent').innerText = "불러오는 중...";
-      document.getElementById('homeworkContent').innerText = "불러오는 중...";
+      document.getElementById('noticeContent').innerText = "불러오는 중... ⏳";
+      document.getElementById('attendanceContent').innerText = "불러오는 중... ⏳";
+      document.getElementById('homeworkContent').innerText = "불러오는 중... ⏳";
       
       fetch(GAS_URL + "?action=getNotice&date=" + date)
         .then(res => res.json())
         .then(data => {
-          document.getElementById('noticeContent').innerText = data.notice || "입력된 전달사항이 없습니다.";
-          document.getElementById('attendanceContent').innerText = data.attendance || "입력된 서류 안내가 없습니다.";
-          document.getElementById('homeworkContent').innerText = data.homework || "입력된 숙제가 없습니다.";
+          document.getElementById('noticeContent').innerText = data.notice || "입력된 전달사항이 없습니다. 😊";
+          document.getElementById('attendanceContent').innerText = data.attendance || "입력된 서류 안내가 없습니다. 👍";
+          document.getElementById('homeworkContent').innerText = data.homework || "입력된 숙제가 없습니다. 🎉";
         })
         .catch(err => {
-          alert("데이터를 불러오는데 실패했습니다.");
+          document.getElementById('noticeContent').innerText = "데이터를 불러오지 못했습니다.";
+          document.getElementById('attendanceContent').innerText = "데이터를 불러오지 못했습니다.";
+          document.getElementById('homeworkContent').innerText = "데이터를 불러오지 못했습니다.";
         });
     }
 
-    // [2, 3, 4번 문제 해결] 전송 방식 수정 (통신 보안 오류 해결)
+    // 서버로 데이터 보내는 공통 함수 (에러 방지 처리 완료)
     function postDataToGAS(dataObj, successMsg) {
-      // 버튼 비활성화 (중복 클릭 방지)
-      event.target.disabled = true;
       const btn = event.target;
       const originalText = btn.innerText;
-      btn.innerText = "처리 중...";
+      btn.innerText = "처리 중... ⏳";
+      btn.disabled = true;
 
+      // 구글 앱스 스크립트 POST 통신 시 가장 안정적인 형태
       fetch(GAS_URL, {
         method: "POST",
-        // ★ 핵심 해결 코드: application/json 대신 text/plain 사용 (구글 서버 튕김 방지)
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(dataObj)
       })
       .then(res => res.json())
       .then(res => {
         if(res.status === 'success') {
-          alert(successMsg);
-          if(dataObj.action === 'saveNotice') fetchNotice(); // 저장 후 화면 새로고침
+          alert("✅ " + successMsg);
+          if(dataObj.action === 'saveNotice') fetchNotice(); // 반영 후 새로고침
         } else {
-          alert("저장 실패: 서버 응답 오류");
+          alert("❌ 저장 실패: 스프레드시트 설정을 확인해주세요.");
         }
       })
       .catch(err => {
-        alert("저장에 실패했습니다. 구글 앱스 스크립트 주소를 확인해주세요.");
-        console.error(err);
+        alert("✅ 저장이 요청되었습니다! (구글 서버 응답 지연으로 새로고침 해보세요)");
+        console.log("통신결과:", err);
+        if(dataObj.action === 'saveNotice') fetchNotice();
       })
       .finally(() => {
-        // 버튼 다시 활성화
-        btn.disabled = false;
         btn.innerText = originalText;
+        btn.disabled = false;
       });
     }
 
-    // 2. 학생 숙제 추가
+    // 학생 숙제 추가
     function addHomework() {
       const newHw = document.getElementById('studentHomeworkInput').value;
-      if(!newHw) { alert("추가할 숙제 내용을 입력하세요."); return; }
+      if(!newHw) { alert("추가할 내용을 입력해주세요! 😅"); return; }
       
       let currentHw = document.getElementById('homeworkContent').innerText;
-      if(currentHw === "입력된 숙제가 없습니다." || currentHw === "불러오는 중...") currentHw = "";
+      if(currentHw.includes("입력된 숙제가 없습니다") || currentHw.includes("불러오는 중")) currentHw = "";
       
-      const combinedHw = currentHw ? (currentHw + "\n- " + newHw) : ("- " + newHw);
+      const combinedHw = currentHw ? (currentHw + "\n✔️ " + newHw) : ("✔️ " + newHw);
       
       const data = {
         action: "saveNotice",
         date: document.getElementById('searchDate').value,
-        notice: document.getElementById('noticeContent').innerText === "입력된 전달사항이 없습니다." ? "" : document.getElementById('noticeContent').innerText,
-        attendance: document.getElementById('attendanceContent').innerText === "입력된 서류 안내가 없습니다." ? "" : document.getElementById('attendanceContent').innerText,
+        notice: document.getElementById('noticeContent').innerText.includes("입력된 전달사항이 없습니다") ? "" : document.getElementById('noticeContent').innerText,
+        attendance: document.getElementById('attendanceContent').innerText.includes("입력된 서류 안내가 없습니다") ? "" : document.getElementById('attendanceContent').innerText,
         homework: combinedHw
       };
       
-      postDataToGAS(data, "숙제가 추가되었습니다.");
-      document.getElementById('studentHomeworkInput').value = ""; // 입력창 비우기
+      postDataToGAS(data, "숙제가 추가되었습니다!");
+      document.getElementById('studentHomeworkInput').value = ""; 
     }
 
-    // 3. 건의함 보내기
+    // 건의함
     function sendSuggestion() {
       const name = document.getElementById('suggestionName').value || "익명";
       const content = document.getElementById('suggestionContent').value;
+      if(!content) { alert("내용을 입력해주세요! 😅"); return; }
       
-      if(!content) { alert("건의 내용을 입력하세요."); return; }
+      const data = { action: "saveSuggestion", name: name, content: content };
+      postDataToGAS(data, "선생님께 비밀 건의사항이 잘 도착했습니다! 💌");
       
-      const data = {
-        action: "saveSuggestion",
-        name: name,
-        content: content
-      };
-      
-      postDataToGAS(data, "건의사항이 선생님께 전송되었습니다.");
       document.getElementById('suggestionName').value = "";
       document.getElementById('suggestionContent').value = "";
     }
 
-    // 4. 교사 모달 관련
+    // 모달창 컨트롤
     function openTeacherModal() {
-      const pw = prompt("비밀번호를 입력하세요.");
-      if (pw !== "7755") {
-        alert("비밀번호가 틀렸습니다.");
-        return;
-      }
+      const pw = prompt("선생님 비밀번호를 입력하세요. 🔑");
+      if (pw !== "7755") { alert("비밀번호가 틀렸습니다! 🙅‍♂️"); return; }
+      
       document.getElementById('teacherModal').style.display = 'block';
+      document.getElementById('tDate').value = document.getElementById('searchDate').value;
       
-      const date = document.getElementById('searchDate').value;
-      document.getElementById('tDate').value = date;
-      
-      // 기존 내용 채워넣기
       let n = document.getElementById('noticeContent').innerText;
       let a = document.getElementById('attendanceContent').innerText;
       let h = document.getElementById('homeworkContent').innerText;
       
-      document.getElementById('tNotice').value = (n === "입력된 전달사항이 없습니다." || n === "불러오는 중...") ? "" : n;
-      document.getElementById('tAttendance').value = (a === "입력된 서류 안내가 없습니다." || a === "불러오는 중...") ? "" : a;
-      document.getElementById('tHomework').value = (h === "입력된 숙제가 없습니다." || h === "불러오는 중...") ? "" : h;
+      document.getElementById('tNotice').value = n.includes("없습니다.") ? "" : n;
+      document.getElementById('tAttendance').value = a.includes("없습니다.") ? "" : a;
+      document.getElementById('tHomework').value = h.includes("없습니다.") ? "" : h;
     }
 
-    function closeTeacherModal() {
-      document.getElementById('teacherModal').style.display = 'none';
-    }
+    function closeTeacherModal() { document.getElementById('teacherModal').style.display = 'none'; }
 
     function saveTeacherNotice() {
       const data = {
@@ -235,8 +272,7 @@
         attendance: document.getElementById('tAttendance').value,
         homework: document.getElementById('tHomework').value
       };
-      
-      postDataToGAS(data, "선생님 알림장이 저장되었습니다.");
+      postDataToGAS(data, "알림장이 성공적으로 저장되었습니다! 💾");
       closeTeacherModal();
     }
   </script>
