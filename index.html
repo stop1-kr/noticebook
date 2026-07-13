@@ -99,11 +99,11 @@
     <div id="noticeContent" class="content-box">불러오는 중...</div>
   </div>
 
-  <!-- 2. 출결서류 (다운로드 버튼 추가) -->
+  <!-- 2. 출결서류 (다운로드 모달 버튼으로 변경) -->
   <div class="section">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #eee; padding-bottom: 10px;">
       <h2 style="border: none; padding: 0; margin: 0;">📋 2. 출결서류 안내</h2>
-      <a href="출결신고서.pdf" download class="action-btn btn-blue" style="width: auto; padding: 8px 12px; margin: 0; font-size: 0.85em; text-decoration: none; border-radius: 8px; box-shadow: none;">📥 서류 다운로드</a>
+      <button onclick="openDownloadModal()" class="action-btn btn-blue" style="width: auto; padding: 8px 12px; margin: 0; font-size: 0.85em; border-radius: 8px; box-shadow: none;">📥 서류 다운로드</button>
     </div>
     <div id="attendanceContent" class="content-box">불러오는 중...</div>
   </div>
@@ -123,7 +123,21 @@
     <button class="action-btn btn-orange" onclick="sendSuggestion()">🚀 선생님께 보내기</button>
   </div>
 
-  <!-- 숙제/평가 추가 모달 (새로 추가됨) -->
+  <!-- 서류 다운로드 모달 (새로 추가됨) -->
+  <div id="downloadModal" class="modal-overlay">
+    <div class="modal-content" style="text-align: center;">
+      <h2 style="margin-top:0;">📥 서류 다운로드</h2>
+      <p style="color: #666; font-size: 0.9em; margin-bottom: 20px;">필요한 양식을 선택하여 다운로드하세요.</p>
+      
+      <a href="출결신고서.pdf" download class="action-btn btn-blue" style="display: block; text-decoration: none; margin-bottom: 10px; box-sizing: border-box;">📄 출결신고서</a>
+      <a href="체험학습 신청서.pdf" download class="action-btn btn-blue" style="display: block; text-decoration: none; margin-bottom: 10px; box-sizing: border-box;">📄 체험학습 신청서</a>
+      <a href="체험학습 보고서.pdf" download class="action-btn btn-blue" style="display: block; text-decoration: none; margin-bottom: 15px; box-sizing: border-box;">📄 체험학습 보고서</a>
+      
+      <button class="action-btn close-btn" onclick="closeDownloadModal()">❌ 닫기</button>
+    </div>
+  </div>
+
+  <!-- 숙제/평가 추가 모달 -->
   <div id="hwModal" class="modal-overlay">
     <div class="modal-content">
       <h2 style="margin-top:0; text-align:center;">📝 평가/숙제 추가</h2>
@@ -171,7 +185,7 @@
   </div>
 
   <script>
-    // ★★★ 아래 쌍따옴표 안에 구글 앱스 스크립트 웹앱 주소를 꼭 넣어주세요! ★★★
+    // 선생님의 구글 앱스 스크립트 웹앱 주소 적용 완료!
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyE5JWHKIXY8SCf9wnV_dwTMkjmmt8QygKLuDdbkeQ7h_DseimR--IN6GhfQH-fLOvIAg/exec"; 
 
     // 안전한 데이터 보관을 위한 전역 변수
@@ -185,10 +199,7 @@
     document.getElementById('todayDate').innerText = `📅 ${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
     document.getElementById('searchDate').value = todayStr;
 
-    window.onload = () => {
-      if(GAS_URL.includes("여기에_선생님의")) alert("⚠️ 구글 앱스 스크립트(GAS) 주소를 코드에 입력하지 않으셨습니다!");
-      else fetchNotice();
-    };
+    window.onload = () => { fetchNotice(); };
 
     function fetchNotice() {
       const date = document.getElementById('searchDate').value || todayStr;
@@ -301,6 +312,10 @@
       })
       .finally(() => { btn.innerText = originalText; btn.disabled = false; });
     }
+
+    // 서류 다운로드 모달 컨트롤
+    function openDownloadModal() { document.getElementById('downloadModal').style.display = 'block'; }
+    function closeDownloadModal() { document.getElementById('downloadModal').style.display = 'none'; }
 
     // 학생 숙제 추가 모달 컨트롤
     function openHwModal() { document.getElementById('hwModal').style.display = 'block'; }
