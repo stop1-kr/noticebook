@@ -117,7 +117,11 @@
 
   <!-- 4. 익명 건의함 -->
   <div class="section">
-    <h2>🤫 4. 익명 건의함</h2>
+  <h2>
+  🤫 4. 익명 건의함
+  <span id="pendingSuggestionStars" style="float:right; color:#f6b63c; font-size:0.9em; letter-spacing:1px;"></span>
+  </h2>
+
     <input type="text" id="suggestionName" placeholder="👤 이름 (안 적으면 익명으로 쉿!)">
     <textarea id="suggestionContent" rows="3" placeholder="💬 건의할 내용을 자유롭게 적어주세요"></textarea>
     <button class="action-btn btn-orange" onclick="sendSuggestion()">🚀 선생님께 보내기</button>
@@ -199,7 +203,14 @@
     document.getElementById('todayDate').innerText = `📅 ${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
     document.getElementById('searchDate').value = todayStr;
 
-    window.onload = () => { fetchNotice(); };
+    window.onload = () => {
+  fetchNotice();
+  fetchSuggestionCount();
+
+  // 30초마다 미처리 건의사항 개수를 새로 확인합니다.
+  setInterval(fetchSuggestionCount, 30000);
+};
+
 
     function fetchNotice() {
       const date = document.getElementById('searchDate').value || todayStr;
@@ -225,6 +236,27 @@
           document.getElementById('homeworkContent').innerText = "데이터를 불러오지 못했습니다.";
         });
     }
+function fetchSuggestionCount() {
+  fetch(GAS_URL + "?action=getSuggestionCount")
+    .then(res => res.json())
+    .then(data => {
+      const starBox = document.getElementById('pendingSuggestionStars');
+      const count = Number(data.uncheckedCount) || 0;
+
+      if (count > 0) {
+        starBox.textContent = " " + "★".repeat(count);
+        starBox.title = "처리하지 않은 건의사항 " + count + "개";
+        starBox.setAttribute("aria-label", "처리하지 않은 건의사항 " + count + "개");
+      } else {
+        starBox.textContent = "";
+        starBox.title = "";
+        starBox.setAttribute("aria-label", "처리하지 않은 건의사항 없음");
+      }
+    })
+    .catch(err => {
+      console.log("건의사항 개수를 불러오지 못했습니다.", err);
+    });
+}
 
     // 디데이 및 날짜순 정렬하여 보여주기
     function renderHomework() {
@@ -254,12 +286,37 @@
         }
       });
       
-      // 날짜순 정렬 (가장 가까운 날짜가 먼저)
-      parsed.sort((a, b) => new Date(a.date) - new Date(b.date));
-      
-      let html = "";
-      const currentDate = new Date();
-      currentDate.setHours(0,0,0,0);
+let html = "";
+
+const currentDate = new Date();
+currentDate.setHours(0, 0, 0, 0);
+
+const todayTime = currentDate.getTime();
+
+// 오늘 이후의 평가와 숙제를 먼저 표시하고,
+// 그 안에서는 날짜가 가까운 순서대로 표시합니다.
+// 이미 지난 항목은 아래쪽에 표시합니다.
+parsed.sort((a, b) => {
+  const aTime = new Date(a.date + "T00:00:00").getTime();
+  const bTime = new Date(b.date + "T00:00:00").getTime();
+
+  const aPast = aTime < todayTime;
+  const bPast = bTime < todayTime;
+
+  // 한쪽만 지난 날짜라면, 지나지 않은 항목을 먼저 표시합니다.
+  if (aPast !== bPast) {
+    return aPast ? 1 : -1;
+  }
+
+  // 아직 지나지 않은 항목은 가까운 날짜부터 표시합니다.
+  if (!aPast) {
+    return aTime - bTime;
+  }
+
+  // 지난 항목은 최근에 지난 항목부터 표시합니다.
+  return bTime - aTime;
+});
+
       
       parsed.forEach(item => {
         const targetDate = new Date(item.date);
@@ -292,7 +349,8 @@
       document.getElementById('homeworkContent').innerHTML = html;
     }
 
-    function postDataToGAS(dataObj, successMsg) {
+function postDataToGAS(dataObj, successMsg, afterRequest) {
+
       const btn = event.target;
       const originalText = btn.innerText;
       btn.innerText = "처리 중... ⏳";
@@ -301,15 +359,33 @@
       fetch(GAS_URL, { method: "POST", body: JSON.stringify(dataObj) })
       .then(res => res.json())
       .then(res => {
-        if(res.status === 'success') {
-          alert("✅ " + successMsg);
-          if(dataObj.action === 'saveNotice') fetchNotice();
-        } else alert("❌ 저장 실패");
+if(res.status === 'success') {
+  alert("✅ " + successMsg);
+
+  if(dataObj.action === 'saveNotice' || dataObj.action === 'addHomework') {
+    fetchNotice();
+  }
+
+  if(typeof afterRequest === "function") {
+    afterRequest();
+  }
+} else {
+  alert("❌ 저장 실패");
+}
+
       })
-      .catch(err => {
-        alert("✅ 저장이 요청되었습니다! (구글 서버 응답 지연 시 새로고침 해보세요)");
-        if(dataObj.action === 'saveNotice') fetchNotice();
-      })
+.catch(err => {
+  alert("✅ 저장이 요청되었습니다! (구글 서버 응답 지연 시 새로고침 해보세요)");
+
+  if(dataObj.action === 'saveNotice' || dataObj.action === 'addHomework') {
+    fetchNotice();
+  }
+
+  if(typeof afterRequest === "function") {
+    setTimeout(afterRequest, 1200);
+  }
+})
+
       .finally(() => { btn.innerText = originalText; btn.disabled = false; });
     }
 
@@ -331,16 +407,18 @@
       if(!subject || !date) { alert("과목명과 날짜를 꼭 선택해주세요! 😅"); return; }
       
       // 스프레드시트에 저장할 규칙적인 문자열 포맷
-      const newLine = `${date} | ${type} | ${subject} | ${desc}`;
-      let combinedHw = window.currentRawHomework ? (window.currentRawHomework + "\n" + newLine) : newLine;
-      
-      const data = {
-        action: "saveNotice",
-        date: document.getElementById('searchDate').value,
-        notice: window.currentRawNotice,
-        attendance: window.currentRawAttendance,
-        homework: combinedHw
-      };
+const newLine = `${date} | ${type} | ${subject} | ${desc}`;
+
+const data = {
+  action: "addHomework",
+
+  // 현재 보고 있는 알림장의 날짜입니다.
+  noticeDate: document.getElementById('searchDate').value,
+
+  // 새로 추가하는 평가 또는 숙제 한 줄입니다.
+  homeworkLine: newLine
+};
+
       
       postDataToGAS(data, "평가/숙제가 등록되었습니다!");
       closeHwModal();
@@ -357,7 +435,8 @@
       if(!content) { alert("내용을 입력해주세요! 😅"); return; }
       
       const data = { action: "saveSuggestion", name: name, content: content };
-      postDataToGAS(data, "선생님께 비밀 건의사항이 잘 도착했습니다! 💌");
+postDataToGAS(data, "선생님께 비밀 건의사항이 잘 도착했습니다! 💌", fetchSuggestionCount);
+
       
       document.getElementById('suggestionName').value = "";
       document.getElementById('suggestionContent').value = "";
