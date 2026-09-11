@@ -412,12 +412,16 @@ const newLine = `${date} | ${type} | ${subject} | ${desc}`;
 const data = {
   action: "addHomework",
 
-  // 현재 보고 있는 알림장의 날짜입니다.
-  noticeDate: document.getElementById('searchDate').value,
+  // 실제 오늘 날짜부터 시작합니다.
+  startDate: todayStr,
 
-  // 새로 추가하는 평가 또는 숙제 한 줄입니다.
+  // 평가 또는 숙제 날짜입니다.
+  endDate: date,
+
+  // 스프레드시트에 추가할 내용입니다.
   homeworkLine: newLine
 };
+
 
       
       postDataToGAS(data, "평가/숙제가 등록되었습니다!");
