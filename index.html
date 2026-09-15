@@ -501,6 +501,291 @@ function renderHomework() {
   homeworkBox.innerHTML = html;
 }
 
+    function parseAttendanceLine(line) {
+  try {
+    const data = JSON.parse(line);
+
+    if (
+      data &&
+      typeof data === "object" &&
+      data.name !== undefined
+    ) {
+      return data;
+    }
+  } catch (error) {
+    // 예전 방식의 일반 텍스트 출결서류는 아래에서 처리합니다.
+  }
+
+  return {
+    name: "",
+    startDate: "",
+    endDate: "",
+    type: "",
+    reason: line,
+    legacy: true
+  };
+}
+
+function formatAttendancePeriod(startDate, endDate) {
+  if (!startDate && !endDate) {
+    return "기간 미입력";
+  }
+
+  if (startDate === endDate) {
+    return formatKoreanDate(startDate);
+  }
+
+  return `${formatKoreanDate(startDate)} ~ ${formatKoreanDate(endDate)}`;
+}
+
+function formatKoreanDate(dateText) {
+  if (!dateText) {
+    return "날짜 미입력";
+  }
+
+  const parts = dateText.split("-");
+
+  if (parts.length !== 3) {
+    return dateText;
+  }
+
+  return `${Number(parts[1])}월 ${Number(parts[2])}일`;
+}
+
+function renderAttendance() {
+  const box = document.getElementById('attendanceContent');
+
+  window.currentAttendanceLines = window.currentRawAttendance
+    ? window.currentRawAttendance
+        .split(/\r?\n/)
+        .filter(line => line.trim() !== "")
+    : [];
+
+  if (window.currentAttendanceLines.length === 0) {
+    box.innerHTML = `
+      <span style="color:#000000;">
+        입력된 출결서류가 없습니다. 👍
+      </span>
+    `;
+    return;
+  }
+
+  let html = "";
+
+  window.currentAttendanceLines.forEach((line, index) => {
+    const item = parseAttendanceLine(line);
+
+    const period = formatAttendancePeriod(
+      item.startDate,
+      item.endDate
+    );
+
+    html += `
+      <div style="
+        margin-bottom:10px;
+        padding:12px;
+        background:#fff;
+        border:1px solid #e0e0e0;
+        border-radius:10px;
+        color:#000000;
+      ">
+        <div style="
+          display:flex;
+          flex-wrap:wrap;
+          gap:8px;
+          align-items:center;
+          color:#000000;
+          font-weight:bold;
+        ">
+          <span>${escapeHtml(item.name || "이름 미입력")}</span>
+          <span>${escapeHtml(period)}</span>
+          <span>${escapeHtml(item.type || "결석 종류 미입력")}</span>
+        </div>
+
+        <div style="
+          margin-top:8px;
+          color:#000000;
+          line-height:1.5;
+        ">
+          ${escapeHtml(item.reason || "이유 미입력")}
+        </div>
+
+        <div style="
+          margin-top:10px;
+          display:flex;
+          gap:6px;
+        ">
+          <button
+            onclick="editAttendance(${index})"
+            style="
+              border:none;
+              border-radius:7px;
+              padding:6px 10px;
+              background:#a1c4fd;
+              color:white;
+              cursor:pointer;
+            ">
+            ✏️ 수정
+          </button>
+
+          <button
+            onclick="deleteAttendance(${index})"
+            style="
+              border:none;
+              border-radius:7px;
+              padding:6px 10px;
+              background:#ff758c;
+              color:white;
+              cursor:pointer;
+            ">
+            🗑️ 삭제
+          </button>
+        </div>
+      </div>
+    `;
+  });
+
+  box.innerHTML = html;
+}
+
+    function openAttendanceModal() {
+  window.editingAttendanceIndex = -1;
+
+  document.getElementById('attendanceName').value = "";
+  document.getElementById('attendanceStartDate').value = "";
+  document.getElementById('attendanceEndDate').value = "";
+  document.getElementById('attendanceType').value = "";
+  document.getElementById('attendanceReason').value = "";
+
+  document.getElementById('attendanceModal').style.display = 'block';
+}
+
+function closeAttendanceModal() {
+  document.getElementById('attendanceModal').style.display = 'none';
+}
+
+function editAttendance(index) {
+  const line = window.currentAttendanceLines[index];
+
+  if (!line) {
+    return;
+  }
+
+  const item = parseAttendanceLine(line);
+
+  window.editingAttendanceIndex = index;
+
+  document.getElementById('attendanceName').value =
+    item.name || "";
+
+  document.getElementById('attendanceStartDate').value =
+    item.startDate || "";
+
+  document.getElementById('attendanceEndDate').value =
+    item.endDate || "";
+
+  document.getElementById('attendanceType').value =
+    item.type || "";
+
+  document.getElementById('attendanceReason').value =
+    item.reason || "";
+
+  document.getElementById('attendanceModal').style.display = 'block';
+}
+
+function deleteAttendance(index) {
+  if (!confirm("이 출결서류를 삭제할까요?")) {
+    return;
+  }
+
+  const lines = [...window.currentAttendanceLines];
+
+  lines.splice(index, 1);
+
+  const data = {
+    action: "saveNotice",
+    date: document.getElementById('searchDate').value,
+    notice: window.currentRawNotice,
+    attendance: lines.join("\n"),
+    homework: window.currentRawHomework
+  };
+
+  postDataToGAS(
+    data,
+    "출결서류가 삭제되었습니다."
+  );
+}
+
+    function submitAttendance() {
+  const name = document
+    .getElementById('attendanceName')
+    .value
+    .trim();
+
+  const startDate = document
+    .getElementById('attendanceStartDate')
+    .value;
+
+  const endDate = document
+    .getElementById('attendanceEndDate')
+    .value;
+
+  const type = document
+    .getElementById('attendanceType')
+    .value
+    .trim();
+
+  const reason = document
+    .getElementById('attendanceReason')
+    .value
+    .trim();
+
+  if (!name || !startDate || !endDate || !type || !reason) {
+    alert("이름, 기간, 결석 종류, 이유를 모두 입력해주세요. 😅");
+    return;
+  }
+
+  if (endDate < startDate) {
+    alert("끝 날짜가 시작 날짜보다 빠를 수 없습니다.");
+    return;
+  }
+
+  const newItem = {
+    name: name,
+    startDate: startDate,
+    endDate: endDate,
+    type: type,
+    reason: reason
+  };
+
+  const newLine = JSON.stringify(newItem);
+  const lines = [...window.currentAttendanceLines];
+
+  if (window.editingAttendanceIndex >= 0) {
+    lines[window.editingAttendanceIndex] = newLine;
+  } else {
+    lines.push(newLine);
+  }
+
+  const data = {
+    action: "saveNotice",
+    date: document.getElementById('searchDate').value,
+    notice: window.currentRawNotice,
+    attendance: lines.join("\n"),
+    homework: window.currentRawHomework
+  };
+
+  postDataToGAS(
+    data,
+    window.editingAttendanceIndex >= 0
+      ? "출결서류가 수정되었습니다."
+      : "출결서류가 추가되었습니다."
+  );
+
+  closeAttendanceModal();
+  window.editingAttendanceIndex = -1;
+}
+
     function escapeHtml(value) {
   return String(value || "")
     .replace(/&/g, "&amp;")
@@ -556,44 +841,140 @@ if(res.status === 'success') {
     function closeDownloadModal() { document.getElementById('downloadModal').style.display = 'none'; }
 
     // 학생 숙제 추가 모달 컨트롤
-    function openHwModal() { document.getElementById('hwModal').style.display = 'block'; }
-    function closeHwModal() { document.getElementById('hwModal').style.display = 'none'; }
+function openHwModal() {
+  window.editingHomeworkIndex = -1;
+
+  document.getElementById('hwSubject').value = "";
+  document.getElementById('hwDate').value = "";
+  document.getElementById('hwDesc').value = "";
+
+  document.querySelector(
+    'input[name="hwType"][value="수행평가"]'
+  ).checked = true;
+
+  document.getElementById('hwModal').style.display = 'block';
+}
+
+function closeHwModal() {
+  document.getElementById('hwModal').style.display = 'none';
+}
+
+function editHomework(lineIndex) {
+  const line = window.currentHomeworkLines[lineIndex];
+
+  if (!line) {
+    return;
+  }
+
+  const parts = line.split(" | ");
+
+  window.editingHomeworkIndex = lineIndex;
+
+  document.querySelector(
+    `input[name="hwType"][value="${parts[1]}"]`
+  ).checked = true;
+
+  document.getElementById('hwSubject').value = parts[2] || "";
+  document.getElementById('hwDate').value = parts[0] || "";
+  document.getElementById('hwDesc').value = parts.slice(3).join(" | ") || "";
+
+  document.getElementById('hwModal').style.display = 'block';
+}
+
+function deleteHomework(lineIndex) {
+  const line = window.currentHomeworkLines[lineIndex];
+
+  if (!line) {
+    return;
+  }
+
+  if (!confirm("이 수행평가 또는 숙제를 삭제할까요?")) {
+    return;
+  }
+
+  const data = {
+    action: "deleteHomework",
+    homeworkLine: line
+  };
+
+  postDataToGAS(
+    data,
+    "수행평가 또는 숙제가 삭제되었습니다."
+  );
+}
 
     // 숙제 추가 완료 버튼
-    function submitHw() {
-      const type = document.querySelector('input[name="hwType"]:checked').value;
-      const subject = document.getElementById('hwSubject').value.trim();
-      const date = document.getElementById('hwDate').value;
-      const desc = document.getElementById('hwDesc').value.trim();
+function submitHw() {
+  const type = document.querySelector(
+    'input[name="hwType"]:checked'
+  ).value;
 
-      if(!subject || !date) { alert("과목명과 날짜를 꼭 선택해주세요! 😅"); return; }
-      
-      // 스프레드시트에 저장할 규칙적인 문자열 포맷
-const newLine = `${date} | ${type} | ${subject} | ${desc}`;
+  const subject = document
+    .getElementById('hwSubject')
+    .value
+    .trim();
 
-const data = {
-  action: "addHomework",
+  const date = document
+    .getElementById('hwDate')
+    .value;
 
-  // 실제 오늘 날짜부터 시작합니다.
-  startDate: todayStr,
+  const desc = document
+    .getElementById('hwDesc')
+    .value
+    .trim();
 
-  // 평가 또는 숙제 날짜입니다.
-  endDate: date,
+  if (!subject || !date) {
+    alert("과목명과 날짜를 꼭 입력해주세요! 😅");
+    return;
+  }
 
-  // 스프레드시트에 추가할 내용입니다.
-  homeworkLine: newLine
-};
+  const newLine = `${date} | ${type} | ${subject} | ${desc}`;
 
+  // 기존 평가·숙제 수정
+  if (window.editingHomeworkIndex >= 0) {
+    const oldLine =
+      window.currentHomeworkLines[
+        window.editingHomeworkIndex
+      ];
 
-      
-      postDataToGAS(data, "평가/숙제가 등록되었습니다!");
-      closeHwModal();
-      
-      // 입력창 초기화
-      document.getElementById('hwSubject').value = "";
-      document.getElementById('hwDate').value = "";
-      document.getElementById('hwDesc').value = "";
-    }
+    const updateData = {
+      action: "updateHomework",
+      oldLine: oldLine,
+      newLine: newLine
+    };
+
+    postDataToGAS(
+      updateData,
+      "수행평가 또는 숙제가 수정되었습니다."
+    );
+
+    closeHwModal();
+    window.editingHomeworkIndex = -1;
+    return;
+  }
+
+  // 새 평가·숙제 추가
+  const addData = {
+    action: "addHomework",
+
+    // 기존에 사용하던 방식대로 오늘부터 평가 날짜까지 저장합니다.
+    startDate: todayStr,
+    endDate: date,
+    homeworkLine: newLine
+  };
+
+  postDataToGAS(
+    addData,
+    "평가/숙제가 등록되었습니다!"
+  );
+
+  closeHwModal();
+
+  document.getElementById('hwSubject').value = "";
+  document.getElementById('hwDate').value = "";
+  document.getElementById('hwDesc').value = "";
+}
+
 
     function sendSuggestion() {
       const name = document.getElementById('suggestionName').value || "익명";
