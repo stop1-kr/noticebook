@@ -22,24 +22,24 @@
     .btn-orange { background: linear-gradient(to right,#f6d365 0%,#fda085 100%); }
     .btn-edit, .btn-delete { border: none; border-radius: 7px; padding: 5px 8px; color: white; cursor: pointer; font-size: .8em; margin-left: 5px; }
     .btn-edit { background: #3498db; } .btn-delete { background: #e74c3c; }
-    .item-actions { margin-left: auto; white-space: nowrap; display: flex; align-items: center; flex-shrink: 0; }
-    #homeworkContent, #attendanceContent { min-height: 0; }
-    .homework-item { margin-bottom: 6px; padding: 6px 8px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; }
-    .homework-main { display: flex; align-items: center; gap: 6px; min-width: 0; width: 100%; }
-    .homework-main > strong:nth-child(2) { min-width: 0; overflow-wrap: anywhere; }
+
+    .item-actions { margin: 0; padding: 0; white-space: nowrap; display: flex; align-items: center; justify-content: flex-end; gap: 4px; flex: 0 0 auto; }
+    #homeworkContent.content-box, #attendanceContent.content-box { min-height: 0 !important; height: auto !important; padding: 0 !important; margin-top: 6px; background: transparent; }
+    .homework-item { display: block; box-sizing: border-box; width: 100%; height: auto !important; min-height: 0 !important; margin: 0 0 6px; padding: 6px 8px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; line-height: 1.25; overflow: visible; }
+    .homework-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: 6px; width: 100%; min-height: 0; }
+    .homework-info { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 5px; min-width: 0; line-height: 1.25; overflow-wrap: anywhere; }
+    .homework-dday, .homework-title, .homework-date { min-width: 0; }
+    .homework-title { overflow-wrap: anywhere; word-break: keep-all; }
     .homework-date { color: #7f8c8d; font-size: .9em; white-space: nowrap; }
-    .homework-description { margin-top: 3px; color: #555; font-size: .95em; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere; }
-    .attendance-item { padding: 6px 8px; margin-bottom: 6px; line-height: 1.3; }
-    .attendance-main { gap: 6px; min-height: 0; }
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.5); z-index: 100; backdrop-filter: blur(3px); overflow-y: auto; }
-    .modal-content { background: white; margin: 10% auto; padding: 25px; width: 90%; max-width: 400px; border-radius: 15px; box-sizing: border-box; }
-    .modal-content label { font-weight: bold; color: #333; display: block; margin-top: 10px; }
-    .close-btn { background: #ff758c !important; margin-top: 10px; }
-    .radio-group { margin: 10px 0; display: flex; gap: 15px; }
-    .radio-group label { margin-top: 0; font-weight: normal; display: flex; align-items: center; gap: 5px; }
-    .detail-input { min-height: 120px; resize: vertical; line-height: 1.5; white-space: pre-wrap; overflow-y: auto; }
-    .attendance-item { color: #000; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 6px 8px; margin-bottom: 6px; line-height: 1.3; }
-    .attendance-main { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; color: #000; min-width: 0; }
+    .homework-description { margin-top: 3px; padding: 0; color: #555; font-size: .95em; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .btn-edit, .btn-delete { border: none; border-radius: 7px; padding: 5px 8px; color: white; cursor: pointer; font-size: .8em; margin: 0; line-height: 1.2; }
+    #homeworkContent > .homework-item, #attendanceContent > .attendance-item { height: auto !important; min-height: 0 !important; }
+    .attendance-item { color: #000; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 6px 8px; margin: 0 0 6px; line-height: 1.3; height: auto !important; min-height: 0 !important; }
+    .attendance-main { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 6px; color: #000; min-width: 0; }
+    .attendance-main > .attendance-name, .attendance-main > .attendance-period, .attendance-main > .attendance-type { min-width: 0; }
+    .attendance-main > .attendance-name { grid-column: 1; }
+    .attendance-main > .attendance-period, .attendance-main > .attendance-type { grid-column: 1; }
+    .attendance-main > .item-actions { grid-column: 2; grid-row: 1 / span 3; }
     .attendance-name { font-weight: bold; color: #000; } .attendance-period, .attendance-type { color: #000; white-space: nowrap; }
     .attendance-reason { margin-top: 3px; color: #000; white-space: pre-wrap; line-height: 1.35; overflow-wrap: anywhere; }
     .empty-message { color: #333; }
@@ -121,6 +121,7 @@ function renderHomework() {
   const lines = window.currentRawHomework.split('\n');
   const parsed = [];
   const unparsed = [];
+
   lines.forEach(line => {
     if (!line.trim()) return;
     const parts = line.split(' | ');
@@ -129,7 +130,7 @@ function renderHomework() {
         date: parts[0],
         type: parts[1],
         subject: parts[2],
-        desc: parts[3] || '',
+        desc: parts.slice(3).join(' | '),
         raw: line
       });
     } else {
@@ -160,10 +161,12 @@ function renderHomework() {
     const dateText = (targetDate.getMonth() + 1) + '월 ' + targetDate.getDate() + '일';
 
     result += `<div class="homework-item">
-      <div class="homework-main">
-        <strong style="color:${dColor};font-size:1.1em;">${dText}</strong>
-        <strong style="color:#2c3e50;font-size:1.05em;">${esc(item.subject)} ${esc(item.type)}</strong>
-        <span class="homework-date">${dateText}</span>
+      <div class="homework-header">
+        <div class="homework-info">
+          <strong class="homework-dday" style="color:${dColor};font-size:1.1em;">${dText}</strong>
+          <strong class="homework-title" style="color:#2c3e50;font-size:1.05em;">${esc(item.subject)} ${esc(item.type)}</strong>
+          <span class="homework-date">${dateText}</span>
+        </div>
         <span class="item-actions">
           <button class="btn-edit" data-date="${encodeURIComponent(item.date)}" data-line="${encodeURIComponent(item.raw)}" onclick="editHomeworkFromButton(this)">수정</button>
           <button class="btn-delete" data-date="${encodeURIComponent(item.date)}" data-line="${encodeURIComponent(item.raw)}" onclick="deleteHomeworkFromButton(this)">삭제</button>
@@ -174,11 +177,12 @@ function renderHomework() {
   });
 
   if (unparsed.length) {
-    result += (result ? '<hr style="border:0;border-top:1px dashed #ddd;margin:15px 0;">' : '') +
+    result += (result ? '<hr style="border:0;border-top:1px dashed #ddd;margin:8px 0;">' : '') +
       `<div style="white-space:pre-wrap;line-height:1.5;color:#555;padding:5px;">${esc(unparsed.join('\n'))}</div>`;
   }
   box.innerHTML = result;
 }
+
 function postDataToGAS(dataObj,successMsg,afterRequest) { fetch(GAS_URL,{method:'POST',body:JSON.stringify(dataObj)}).then(res=>res.json()).then(res=>{if(res.status==='success'){alert('✅ '+successMsg);if(afterRequest)afterRequest();if(['saveNotice','addHomework','updateHomework','deleteHomework','addAttendance','updateAttendance','deleteAttendance'].includes(dataObj.action))fetchNotice();}else alert('❌ '+(res.message||'저장 실패'));}).catch(()=>{alert('✅ 저장이 요청되었습니다. 잠시 후 새로고침해 주세요.');setTimeout(()=>{if(afterRequest)afterRequest();fetchNotice();},1000);}); }
 function openDownloadModal(){document.getElementById('downloadModal').style.display='block';} function closeDownloadModal(){document.getElementById('downloadModal').style.display='none';}
 function openHwModal(){document.getElementById('hwEditLine').value='';document.getElementById('hwEditDate').value='';document.getElementById('hwSubject').value='';document.getElementById('hwDate').value='';document.getElementById('hwDesc').value='';document.querySelector('input[name="hwType"][value="수행평가"]').checked=true;document.getElementById('hwModal').style.display='block';} function closeHwModal(){document.getElementById('hwModal').style.display='none';}
