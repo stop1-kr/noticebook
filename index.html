@@ -13,48 +13,55 @@
     .search-box { text-align: center; margin-bottom: 20px; }
     .search-box input { width: 50%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; }
     .search-box button { padding: 10px 15px; border-radius: 10px; border: none; background-color: #a1c4fd; color: white; font-weight: bold; cursor: pointer; }
-    .section { background: #fff; margin-bottom: 16px; border-radius: 15px; padding: 14px 16px; box-shadow: 0 4px 8px rgba(0,0,0,.03); }
-    .section h2 { font-size: 1.2em; color: #2c3e50; margin-top: 0; margin-bottom: 0; border-bottom: 2px dashed #eee; padding-bottom: 8px; }
+    .section { background: #fff; margin-bottom: 16px; border-radius: 15px; padding: 16px 18px; box-shadow: 0 4px 8px rgba(0,0,0,.03); }
+    .section h2 { font-size: 1.2em; color: #2c3e50; margin: 0 0 2px; border-bottom: 2px dashed #eee; padding-bottom: 8px; }
     .content-box { min-height: 0; white-space: pre-wrap; margin-top: 10px; line-height: 1.5; color: #555; background: #fdfdfd; padding: 6px; border-radius: 8px; }
     input[type="text"], input[type="date"], textarea, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #e0e0e0; border-radius: 10px; box-sizing: border-box; font-family: inherit; background-color: #fafafa; }
     button.action-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 1em; font-weight: bold; color: white; cursor: pointer; margin-top: 5px; }
     .btn-blue { background: linear-gradient(to right,#4facfe 0%,#00f2fe 100%); }
     .btn-orange { background: linear-gradient(to right,#f6d365 0%,#fda085 100%); }
-    .btn-edit, .btn-delete { border: none; border-radius: 6px; padding: 3px 7px; color: white; cursor: pointer; font-size: .75em; margin: 0; line-height: 1.2; }
+    .btn-edit, .btn-delete { border: none; border-radius: 7px; padding: 5px 8px; color: white; cursor: pointer; font-size: .8em; margin-left: 5px; }
     .btn-edit { background: #3498db; } .btn-delete { background: #e74c3c; }
 
-    .item-actions { margin: 0; padding: 0; white-space: nowrap; display: flex; align-items: center; justify-content: flex-end; gap: 4px; flex: 0 0 auto; }
-    #homeworkContent.content-box, #attendanceContent.content-box { min-height: 0 !important; height: auto !important; padding: 0 !important; margin-top: 6px; background: transparent; }
-    .homework-item { display: block; box-sizing: border-box; width: 100%; height: auto !important; min-height: 0 !important; margin: 0 0 6px; padding: 7px 10px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; line-height: 1.2; overflow: visible; }
-    .homework-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 0; }
-    .homework-info { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 6px; min-width: 0; flex: 1 1 auto; line-height: 1.2; overflow-wrap: anywhere; }
-    .homework-dday, .homework-title, .homework-date { min-width: 0; }
-    .homework-title { overflow-wrap: anywhere; word-break: keep-all; }
-    .homework-date { color: #7f8c8d; font-size: .9em; white-space: nowrap; }
-    .homework-description { margin-top: 2px; padding: 0; color: #555; font-size: .95em; line-height: 1.3; white-space: pre-wrap; overflow-wrap: anywhere; }
-    .btn-edit, .btn-delete { border: none; border-radius: 6px; padding: 3px 7px; color: white; cursor: pointer; font-size: .75em; margin: 0; line-height: 1.2; }
+    /* ===== 카드 공통: content-box의 pre-wrap 상속 차단 (여백 폭증의 원인) ===== */
+    #homeworkContent.content-box, #attendanceContent.content-box {
+      min-height: 0 !important; height: auto !important; padding: 0 !important;
+      margin-top: 8px; background: transparent; white-space: normal; line-height: 1.25; }
     #homeworkContent > .homework-item, #attendanceContent > .attendance-item { height: auto !important; min-height: 0 !important; }
-    .attendance-item { color: #000; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 6px 8px; margin: 0 0 6px; line-height: 1.3; height: auto !important; min-height: 0 !important; }
-    .attendance-main { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #000; min-width: 0; }
-    .attendance-info { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 8px; min-width: 0; flex: 1 1 auto; line-height: 1.3; }
-    .attendance-name { font-weight: bold; color: #000; }
-    .attendance-period { color: #000; white-space: nowrap; font-size: .95em; }
-    .attendance-type { color: #3b4a6b; white-space: nowrap; font-size: .85em; background: #eef2ff; border-radius: 5px; padding: 1px 6px; }
-    .attendance-reason { margin-top: 2px; color: #444; font-size: .95em; white-space: pre-wrap; line-height: 1.3; overflow-wrap: anywhere; }
-    .empty-message { color: #333; }
+    .item-actions { display: flex; align-items: center; justify-content: flex-end; gap: 4px; flex: 0 0 auto; margin: 0; padding: 0; white-space: nowrap; }
+    .btn-edit, .btn-delete { border: none; border-radius: 6px; padding: 2px 7px; color: #fff; cursor: pointer; font-size: .72em; line-height: 1.45; margin: 0; }
+    .btn-edit { background: #3498db; } .btn-delete { background: #e74c3c; }
 
-    /* ===== 모달 (버튼 클릭 시에만 표시) ===== */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,.5); z-index: 1000; overflow-y: auto; -webkit-overflow-scrolling: touch;
-      padding: 20px 12px; box-sizing: border-box; }
-    .modal-content { background: #fff; width: 100%; max-width: 420px; margin: 4vh auto; padding: 20px;
-      border-radius: 15px; box-sizing: border-box; box-shadow: 0 10px 30px rgba(0,0,0,.2); }
-    .modal-content h2 { font-size: 1.15em; color: #2c3e50; }
-    .close-btn { background: #b0b8c1; }
-    .radio-group { display: flex; gap: 14px; align-items: center; margin: 8px 0 4px; }
-    .radio-group label { font-weight: normal; display: flex; align-items: center; gap: 4px; }
-    .detail-input { min-height: 110px; resize: vertical; line-height: 1.4; }
-    .modal-content label { display: block; margin-top: 10px; font-weight: bold; font-size: .9em; color: #555; }
+    /* ===== 3. 수행평가 / 숙제 ===== */
+    .homework-item { box-sizing: border-box; width: 100%; margin: 0 0 6px; padding: 5px 10px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; line-height: 1.25; }
+    .homework-item:last-child { margin-bottom: 0; }
+    .homework-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+    .homework-info { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 5px; min-width: 0; line-height: 1.25; }
+    .homework-dday { font-weight: 700; }
+    .homework-title { font-weight: 700; color: #2c3e50; overflow-wrap: anywhere; word-break: keep-all; }
+    .homework-date { color: #7f8c8d; font-size: .88em; white-space: nowrap; }
+    .homework-description { margin: 1px 0 0; padding: 0; color: #555; font-size: .9em; line-height: 1.25; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+    /* ===== 2. 출결서류 ===== */
+    .attendance-item { box-sizing: border-box; color: #000; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 5px 10px; margin: 0 0 6px; line-height: 1.25; }
+    .attendance-item:last-child { margin-bottom: 0; }
+    .attendance-main { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+    .attendance-info { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 6px; min-width: 0; }
+    .attendance-name { font-weight: 700; color: #000; }
+    .attendance-period { color: #555; font-size: .92em; white-space: nowrap; }
+    .attendance-type { font-size: .85em; color: #3f4d8a; background: #eef2ff; border-radius: 5px; padding: 1px 6px; white-space: nowrap; }
+    .attendance-reason { margin: 1px 0 0; color: #555; font-size: .9em; line-height: 1.25; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .empty-message { color: #333; padding: 2px 0; }
+
+    /* ===== 모달 (원래 index.html 규칙 복원) ===== */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.5); z-index: 100; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .modal-content { background: #fff; margin: 6vh auto; padding: 22px; width: 90%; max-width: 400px; border-radius: 15px; box-sizing: border-box; max-height: 88vh; overflow-y: auto; }
+    .modal-content h2 { margin-top: 0; }
+    .modal-content label { font-weight: bold; color: #333; display: block; margin-top: 10px; }
+    .close-btn { background: #ff758c !important; margin-top: 10px; }
+    .radio-group { margin: 10px 0; display: flex; gap: 15px; }
+    .radio-group label { margin-top: 0; font-weight: normal; display: flex; align-items: center; gap: 5px; }
+    .detail-input { min-height: 110px; }
   </style>
 </head>
 <body>
@@ -110,20 +117,23 @@ function renderAttendanceDocuments() {
     box.innerHTML = '<div class="empty-message">입력된 출결 서류가 없습니다.</div>';
     return;
   }
-  box.innerHTML = documents.map(item => `<div class="attendance-item">
-    <div class="attendance-main">
-      <span class="attendance-info">
-        <span class="attendance-name">${esc(item.name)}</span>
-        <span class="attendance-period">${esc(formatPeriod(item.startDate, item.endDate))}</span>
-        <span class="attendance-type">${esc(item.absenceType)}</span>
-      </span>
-      <span class="item-actions">
-        <button class="btn-edit" data-id="${encodeURIComponent(item.id)}" onclick="editAttendanceFromButton(this)">수정</button>
-        <button class="btn-delete" data-id="${encodeURIComponent(item.id)}" onclick="deleteAttendanceFromButton(this)">삭제</button>
-      </span>
-    </div>
-    ${String(item.reason || '').trim() ? `<div class="attendance-reason">${esc(item.reason)}</div>` : ''}
-  </div>`).join('');
+  box.innerHTML = documents.map(item => {
+    const reason = String(item.reason || '').trim();
+    return '<div class="attendance-item">'
+      + '<div class="attendance-main">'
+      + '<span class="attendance-info">'
+      + '<span class="attendance-name">' + esc(item.name) + '</span>'
+      + '<span class="attendance-period">' + esc(formatPeriod(item.startDate, item.endDate)) + '</span>'
+      + '<span class="attendance-type">' + esc(item.absenceType) + '</span>'
+      + '</span>'
+      + '<span class="item-actions">'
+      + '<button class="btn-edit" data-id="' + encodeURIComponent(item.id) + '" onclick="editAttendanceFromButton(this)">수정</button>'
+      + '<button class="btn-delete" data-id="' + encodeURIComponent(item.id) + '" onclick="deleteAttendanceFromButton(this)">삭제</button>'
+      + '</span>'
+      + '</div>'
+      + (reason ? '<div class="attendance-reason">' + esc(reason) + '</div>' : '')
+      + '</div>';
+  }).join('');
 }
 function renderHomework() {
   const box = document.getElementById('homeworkContent');
@@ -174,20 +184,21 @@ function renderHomework() {
     const dColor = diff < 0 ? '#95a5a6' : (diff <= 3 ? '#e74c3c' : '#3498db');
     const dateText = (targetDate.getMonth() + 1) + '월 ' + targetDate.getDate() + '일';
 
-    result += `<div class="homework-item">
-      <div class="homework-header">
-        <div class="homework-info">
-          <strong class="homework-dday" style="color:${dColor};font-size:1em;">${dText}</strong>
-          <strong class="homework-title" style="color:#2c3e50;font-size:1em;">${esc(item.subject)} ${esc(item.type)}</strong>
-          <span class="homework-date">${dateText}</span>
-        </div>
-        <span class="item-actions">
-          <button class="btn-edit" data-date="${encodeURIComponent(item.date)}" data-line="${encodeURIComponent(item.raw)}" onclick="editHomeworkFromButton(this)">수정</button>
-          <button class="btn-delete" data-date="${encodeURIComponent(item.date)}" data-line="${encodeURIComponent(item.raw)}" onclick="deleteHomeworkFromButton(this)">삭제</button>
-        </span>
-      </div>
-      ${item.desc ? `<div class="homework-description">✔️ ${esc(item.desc)}</div>` : ''}
-    </div>`;
+    const hwDesc = String(item.desc || '').trim();
+    result += '<div class="homework-item">'
+      + '<div class="homework-header">'
+      + '<span class="homework-info">'
+      + '<strong class="homework-dday" style="color:' + dColor + ';">' + dText + '</strong>'
+      + '<strong class="homework-title">' + esc(item.subject) + ' ' + esc(item.type) + '</strong>'
+      + '<span class="homework-date">' + dateText + '</span>'
+      + '</span>'
+      + '<span class="item-actions">'
+      + '<button class="btn-edit" data-date="' + encodeURIComponent(item.date) + '" data-line="' + encodeURIComponent(item.raw) + '" onclick="editHomeworkFromButton(this)">수정</button>'
+      + '<button class="btn-delete" data-date="' + encodeURIComponent(item.date) + '" data-line="' + encodeURIComponent(item.raw) + '" onclick="deleteHomeworkFromButton(this)">삭제</button>'
+      + '</span>'
+      + '</div>'
+      + (hwDesc ? '<div class="homework-description">\u2714\ufe0f ' + esc(hwDesc) + '</div>' : '')
+      + '</div>';
   });
 
   if (unparsed.length) {
