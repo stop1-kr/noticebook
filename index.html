@@ -15,7 +15,7 @@
     .search-box button { padding: 10px 15px; border-radius: 10px; border: none; background-color: #a1c4fd; color: white; font-weight: bold; cursor: pointer; }
     .section { background: #fff; margin-bottom: 20px; border-radius: 15px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,.03); }
     .section h2 { font-size: 1.2em; color: #2c3e50; margin-top: 0; border-bottom: 2px dashed #eee; padding-bottom: 10px; }
-    .content-box { min-height: 30px; white-space: pre-wrap; margin-top: 10px; line-height: 1.5; color: #555; background: #fdfdfd; padding: 10px; border-radius: 8px; }
+    .content-box { min-height: 0; white-space: pre-wrap; margin-top: 10px; line-height: 1.5; color: #555; background: #fdfdfd; padding: 6px; border-radius: 8px; }
     input[type="text"], input[type="date"], textarea, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #e0e0e0; border-radius: 10px; box-sizing: border-box; font-family: inherit; background-color: #fafafa; }
     button.action-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 1em; font-weight: bold; color: white; cursor: pointer; margin-top: 5px; }
     .btn-blue { background: linear-gradient(to right,#4facfe 0%,#00f2fe 100%); }
@@ -23,22 +23,25 @@
     .btn-edit, .btn-delete { border: none; border-radius: 7px; padding: 5px 8px; color: white; cursor: pointer; font-size: .8em; margin-left: 5px; }
     .btn-edit { background: #3498db; } .btn-delete { background: #e74c3c; }
     .item-actions { margin-left: auto; white-space: nowrap; display: flex; align-items: center; flex-shrink: 0; }
-    .homework-item { margin-bottom: 10px; padding: 10px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; }
-    .homework-main { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; }
+    #homeworkContent, #attendanceContent { min-height: 0; }
+    .homework-item { margin-bottom: 6px; padding: 6px 8px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; }
+    .homework-main { display: flex; align-items: center; gap: 6px; min-width: 0; width: 100%; }
+    .homework-main > strong:nth-child(2) { min-width: 0; overflow-wrap: anywhere; }
     .homework-date { color: #7f8c8d; font-size: .9em; white-space: nowrap; }
-    .homework-description { margin-top: 5px; color: #555; font-size: .95em; white-space: pre-wrap; }
-    .attendance-item { padding: 9px 10px; margin-bottom: 8px; line-height: 1.35; }
-    .attendance-main { gap: 8px; min-height: 0; }
+    .homework-description { margin-top: 3px; color: #555; font-size: .95em; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .attendance-item { padding: 6px 8px; margin-bottom: 6px; line-height: 1.3; }
+    .attendance-main { gap: 6px; min-height: 0; }
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.5); z-index: 100; backdrop-filter: blur(3px); overflow-y: auto; }
     .modal-content { background: white; margin: 10% auto; padding: 25px; width: 90%; max-width: 400px; border-radius: 15px; box-sizing: border-box; }
     .modal-content label { font-weight: bold; color: #333; display: block; margin-top: 10px; }
     .close-btn { background: #ff758c !important; margin-top: 10px; }
     .radio-group { margin: 10px 0; display: flex; gap: 15px; }
     .radio-group label { margin-top: 0; font-weight: normal; display: flex; align-items: center; gap: 5px; }
-    .attendance-item { color: #000; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 12px; margin-bottom: 10px; line-height: 1.5; }
-    .attendance-main { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: #000; }
-    .attendance-name { font-weight: bold; color: #000; } .attendance-period, .attendance-type { color: #000; }
-    .attendance-reason { margin-top: 5px; color: #000; white-space: pre-wrap; }
+    .detail-input { min-height: 120px; resize: vertical; line-height: 1.5; white-space: pre-wrap; overflow-y: auto; }
+    .attendance-item { color: #000; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 6px 8px; margin-bottom: 6px; line-height: 1.3; }
+    .attendance-main { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; color: #000; min-width: 0; }
+    .attendance-name { font-weight: bold; color: #000; } .attendance-period, .attendance-type { color: #000; white-space: nowrap; }
+    .attendance-reason { margin-top: 3px; color: #000; white-space: pre-wrap; line-height: 1.35; overflow-wrap: anywhere; }
     .empty-message { color: #333; }
   </style>
 </head>
@@ -56,7 +59,8 @@
 
   <div id="downloadModal" class="modal-overlay"><div class="modal-content" style="text-align:center;"><h2 style="margin-top:0;">📥 서류 다운로드</h2><p style="color:#666;font-size:.9em;margin-bottom:20px;">필요한 양식을 선택하여 다운로드하세요.</p><a href="출결신고서.pdf" download class="action-btn btn-blue" style="display:block;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">📄 출결신고서</a><a href="체험학습 신청서.pdf" download class="action-btn btn-blue" style="display:block;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">📄 체험학습 신청서</a><a href="체험학습 보고서.pdf" download class="action-btn btn-blue" style="display:block;text-decoration:none;margin-bottom:15px;box-sizing:border-box;">📄 체험학습 보고서</a><button class="action-btn close-btn" onclick="closeDownloadModal()">❌ 닫기</button></div></div>
 
-  <div id="hwModal" class="modal-overlay"><div class="modal-content"><h2 style="margin-top:0;text-align:center;">📝 평가/숙제 추가</h2><input type="hidden" id="hwEditLine"><input type="hidden" id="hwEditDate"><label>📌 종류</label><div class="radio-group"><label><input type="radio" name="hwType" value="수행평가" checked> 수행평가</label><label><input type="radio" name="hwType" value="숙제"> 숙제</label></div><label>📚 과목명</label><input type="text" id="hwSubject" placeholder="예: 수학, 국어"><label>📅 제출/평가 날짜</label><input type="date" id="hwDate"><label>💬 세부 내용 (선택)</label><input type="text" id="hwDesc" placeholder="예: 교과서 50쪽 풀이"><button class="action-btn btn-blue" onclick="submitHw()">✅ 완료</button><button class="action-btn close-btn" onclick="closeHwModal()">❌ 취소</button></div></div>
+  <div id="hwModal" class="modal-overlay"><div class="modal-content"><h2 style="margin-top:0;text-align:center;">📝 평가/숙제 추가</h2><input type="hidden" id="hwEditLine"><input type="hidden" id="hwEditDate"><label>📌 종류</label><div class="radio-group"><label><input type="radio" name="hwType" value="수행평가" checked> 수행평가</label><label><input type="radio" name="hwType" value="숙제"> 숙제</label></div><label>📚 과목명</label><input type="text" id="hwSubject" placeholder="예: 수학, 국어"><label>📅 제출/평가 날짜</label><input type="date" id="hwDate"><label>💬 세부 내용 (선택)</label><textarea id="hwDesc" class="detail-input" rows="6" placeholder="예: 교과서 50쪽 풀이
+여러 줄로 자세히 입력할 수 있습니다."></textarea><button class="action-btn btn-blue" onclick="submitHw()">✅ 완료</button><button class="action-btn close-btn" onclick="closeHwModal()">❌ 취소</button></div></div>
 
   <div id="attendanceModal" class="modal-overlay"><div class="modal-content"><h2 style="margin-top:0;text-align:center;">📋 출결 서류</h2><input type="hidden" id="attendanceEditId"><label>1. 이름</label><input type="text" id="attendanceName" placeholder="이름을 입력하세요"><label>2. 기간</label><div style="display:flex;gap:8px;align-items:center;"><input type="date" id="attendanceStartDate"><span>~</span><input type="date" id="attendanceEndDate"></div><label>3. 결석 종류</label><select id="attendanceType"><option value="결석">결석</option><option value="지각">지각</option><option value="조퇴">조퇴</option><option value="결과">결과</option><option value="기타">기타</option></select><label>4. 이유</label><textarea id="attendanceReason" rows="3" placeholder="이유를 입력하세요"></textarea><button class="action-btn btn-blue" onclick="submitAttendance()">✅ 저장</button><button class="action-btn close-btn" onclick="closeAttendanceModal()">❌ 취소</button></div></div>
 
