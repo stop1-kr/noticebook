@@ -13,8 +13,8 @@
     .search-box { text-align: center; margin-bottom: 20px; }
     .search-box input { width: 50%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; }
     .search-box button { padding: 10px 15px; border-radius: 10px; border: none; background-color: #a1c4fd; color: white; font-weight: bold; cursor: pointer; }
-    .section { background: #fff; margin-bottom: 20px; border-radius: 15px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,.03); }
-    .section h2 { font-size: 1.2em; color: #2c3e50; margin-top: 0; border-bottom: 2px dashed #eee; padding-bottom: 10px; }
+    .section { background: #fff; margin-bottom: 14px; border-radius: 15px; padding: 14px 16px; box-shadow: 0 4px 8px rgba(0,0,0,.03); }
+    .section h2 { font-size: 1.2em; color: #2c3e50; margin: 0 0 8px; border-bottom: 2px dashed #eee; padding-bottom: 8px; }
     .content-box { min-height: 0; white-space: pre-wrap; margin-top: 10px; line-height: 1.5; color: #555; background: #fdfdfd; padding: 6px; border-radius: 8px; }
     input[type="text"], input[type="date"], textarea, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #e0e0e0; border-radius: 10px; box-sizing: border-box; font-family: inherit; background-color: #fafafa; }
     button.action-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 1em; font-weight: bold; color: white; cursor: pointer; margin-top: 5px; }
@@ -23,26 +23,35 @@
     .btn-edit, .btn-delete { border: none; border-radius: 7px; padding: 5px 8px; color: white; cursor: pointer; font-size: .8em; margin-left: 5px; }
     .btn-edit { background: #3498db; } .btn-delete { background: #e74c3c; }
 
-    .item-actions { margin: 0; padding: 0; white-space: nowrap; display: flex; align-items: center; justify-content: flex-end; gap: 4px; flex: 0 0 auto; }
+    /* ===== 공통: 수정/삭제 버튼 (오른쪽 끝 고정) ===== */
+    .item-actions { display: flex; align-items: center; justify-content: flex-end; gap: 4px; flex: 0 0 auto; white-space: nowrap; margin: 0; padding: 0; }
+    .btn-edit, .btn-delete { border: none; border-radius: 6px; padding: 3px 7px; color: #fff; font-weight: bold; font-size: .75em; line-height: 1.15; cursor: pointer; margin: 0; }
+    .btn-edit { background: #3498db; }
+    .btn-delete { background: #e74c3c; }
+
     #homeworkContent.content-box, #attendanceContent.content-box { min-height: 0 !important; height: auto !important; padding: 0 !important; margin-top: 6px; background: transparent; }
-    .homework-item { display: block; box-sizing: border-box; width: 100%; height: auto !important; min-height: 0 !important; margin: 0 0 6px; padding: 6px 8px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; line-height: 1.25; overflow: visible; }
-    .homework-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: 6px; width: 100%; min-height: 0; }
-    .homework-info { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 5px; min-width: 0; line-height: 1.25; overflow-wrap: anywhere; }
-    .homework-dday, .homework-title, .homework-date { min-width: 0; }
-    .homework-title { overflow-wrap: anywhere; word-break: keep-all; }
-    .homework-date { color: #7f8c8d; font-size: .9em; white-space: nowrap; }
-    .homework-description { margin-top: 3px; padding: 0; color: #555; font-size: .95em; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere; }
-    .btn-edit, .btn-delete { border: none; border-radius: 7px; padding: 5px 8px; color: white; cursor: pointer; font-size: .8em; margin: 0; line-height: 1.2; }
     #homeworkContent > .homework-item, #attendanceContent > .attendance-item { height: auto !important; min-height: 0 !important; }
-    .attendance-item { color: #000; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 6px 8px; margin: 0 0 6px; line-height: 1.3; height: auto !important; min-height: 0 !important; }
-    .attendance-main { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 6px; color: #000; min-width: 0; }
-    .attendance-main > .attendance-name, .attendance-main > .attendance-period, .attendance-main > .attendance-type { min-width: 0; }
-    .attendance-main > .attendance-name { grid-column: 1; }
-    .attendance-main > .attendance-period, .attendance-main > .attendance-type { grid-column: 1; }
-    .attendance-main > .item-actions { grid-column: 2; grid-row: 1 / span 3; }
-    .attendance-name { font-weight: bold; color: #000; } .attendance-period, .attendance-type { color: #000; white-space: nowrap; }
-    .attendance-reason { margin-top: 3px; color: #000; white-space: pre-wrap; line-height: 1.35; overflow-wrap: anywhere; }
-    .empty-message { color: #333; }
+
+    /* ===== 2. 출결서류 안내 : [이름] [날짜] [종류] ... [버튼] / 아래줄 사유 ===== */
+    .attendance-item { box-sizing: border-box; width: 100%; height: auto !important; min-height: 0 !important; margin: 0 0 6px; padding: 7px 10px; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; color: #000; line-height: 1.25; }
+    .attendance-item:last-child { margin-bottom: 0; }
+    .attendance-main { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-width: 0; }
+    .attendance-info { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 8px; min-width: 0; }
+    .attendance-name { font-weight: bold; color: #000; white-space: nowrap; }
+    .attendance-period { color: #555; font-size: .92em; white-space: nowrap; }
+    .attendance-type { color: #1d4ed8; background: #eef2ff; border-radius: 5px; padding: 1px 6px; font-size: .82em; white-space: nowrap; }
+    .attendance-reason { margin: 3px 0 0; color: #444; font-size: .93em; line-height: 1.3; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .attendance-reason:empty { display: none; }
+
+    /* ===== 3. 수행평가/숙제 안내 : 세로 여백만 축소 ===== */
+    .homework-item { box-sizing: border-box; width: 100%; height: auto !important; min-height: 0 !important; margin: 0 0 6px; padding: 7px 10px; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; line-height: 1.2; }
+    .homework-item:last-child { margin-bottom: 0; }
+    .homework-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-width: 0; }
+    .homework-info { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 6px; min-width: 0; }
+    .homework-title { overflow-wrap: anywhere; word-break: keep-all; }
+    .homework-date { color: #7f8c8d; font-size: .88em; white-space: nowrap; }
+    .homework-description { margin: 3px 0 0; padding: 0; color: #555; font-size: .93em; line-height: 1.3; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .empty-message { color: #333; padding: 2px; }
   </style>
 </head>
 <body>
@@ -98,18 +107,23 @@ function renderAttendanceDocuments() {
     box.innerHTML = '<div class="empty-message">입력된 출결 서류가 없습니다.</div>';
     return;
   }
-  box.innerHTML = documents.map(item => `<div class="attendance-item">
+  box.innerHTML = documents.map(item => {
+    const reason = String(item.reason == null ? '' : item.reason).trim();
+    return `<div class="attendance-item">
     <div class="attendance-main">
-      <span class="attendance-name">${esc(item.name)}</span>
-      <span class="attendance-period">${esc(formatPeriod(item.startDate, item.endDate))}</span>
-      <span class="attendance-type">${esc(item.absenceType)}</span>
+      <div class="attendance-info">
+        <span class="attendance-name">${esc(item.name)}</span>
+        <span class="attendance-period">${esc(formatPeriod(item.startDate, item.endDate))}</span>
+        <span class="attendance-type">${esc(item.absenceType)}</span>
+      </div>
       <span class="item-actions">
         <button class="btn-edit" data-id="${encodeURIComponent(item.id)}" onclick="editAttendanceFromButton(this)">수정</button>
         <button class="btn-delete" data-id="${encodeURIComponent(item.id)}" onclick="deleteAttendanceFromButton(this)">삭제</button>
       </span>
-    </div>
-    <div class="attendance-reason">${esc(item.reason)}</div>
-  </div>`).join('');
+    </div>${reason ? `
+    <div class="attendance-reason">${esc(reason)}</div>` : ''}
+  </div>`;
+  }).join('');
 }
 function renderHomework() {
   const box = document.getElementById('homeworkContent');
@@ -163,8 +177,8 @@ function renderHomework() {
     result += `<div class="homework-item">
       <div class="homework-header">
         <div class="homework-info">
-          <strong class="homework-dday" style="color:${dColor};font-size:1.1em;">${dText}</strong>
-          <strong class="homework-title" style="color:#2c3e50;font-size:1.05em;">${esc(item.subject)} ${esc(item.type)}</strong>
+          <strong class="homework-dday" style="color:${dColor};font-size:1em;">${dText}</strong>
+          <strong class="homework-title" style="color:#2c3e50;font-size:1em;">${esc(item.subject)} ${esc(item.type)}</strong>
           <span class="homework-date">${dateText}</span>
         </div>
         <span class="item-actions">
@@ -177,8 +191,8 @@ function renderHomework() {
   });
 
   if (unparsed.length) {
-    result += (result ? '<hr style="border:0;border-top:1px dashed #ddd;margin:8px 0;">' : '') +
-      `<div style="white-space:pre-wrap;line-height:1.5;color:#555;padding:5px;">${esc(unparsed.join('\n'))}</div>`;
+    result += (result ? '<hr style="border:0;border-top:1px dashed #ddd;margin:6px 0;">' : '') +
+      `<div style="white-space:pre-wrap;line-height:1.35;color:#555;padding:2px;">${esc(unparsed.join('\n'))}</div>`;
   }
   box.innerHTML = result;
 }
