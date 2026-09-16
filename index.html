@@ -22,7 +22,13 @@
     .btn-orange { background: linear-gradient(to right,#f6d365 0%,#fda085 100%); }
     .btn-edit, .btn-delete { border: none; border-radius: 7px; padding: 5px 8px; color: white; cursor: pointer; font-size: .8em; margin-left: 5px; }
     .btn-edit { background: #3498db; } .btn-delete { background: #e74c3c; }
-    .item-actions { margin-left: auto; white-space: nowrap; display: flex; align-items: center; }
+    .item-actions { margin-left: auto; white-space: nowrap; display: flex; align-items: center; flex-shrink: 0; }
+    .homework-item { margin-bottom: 10px; padding: 10px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; }
+    .homework-main { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; }
+    .homework-date { color: #7f8c8d; font-size: .9em; white-space: nowrap; }
+    .homework-description { margin-top: 5px; color: #555; font-size: .95em; white-space: pre-wrap; }
+    .attendance-item { padding: 9px 10px; margin-bottom: 8px; line-height: 1.35; }
+    .attendance-main { gap: 8px; min-height: 0; }
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.5); z-index: 100; backdrop-filter: blur(3px); overflow-y: auto; }
     .modal-content { background: white; margin: 10% auto; padding: 25px; width: 90%; max-width: 400px; border-radius: 15px; box-sizing: border-box; }
     .modal-content label { font-weight: bold; color: #333; display: block; margin-top: 10px; }
@@ -101,7 +107,74 @@ function renderAttendanceDocuments() {
     <div class="attendance-reason">${esc(item.reason)}</div>
   </div>`).join('');
 }
-function renderHomework() { if(!window.currentRawHomework){ document.getElementById('homeworkContent').innerHTML='<div class="empty-message">입력된 평가/숙제가 없습니다. 🎉</div>'; return; } const lines=window.currentRawHomework.split('\n'); let parsed=[]; let unparsed=[]; lines.forEach(line=>{if(!line.trim())return; const parts=line.split(' | '); if(parts.length>=3&&!isNaN(Date.parse(parts[0]))){parsed.push({date:parts[0],type:parts[1],subject:parts[2],desc:parts[3]||'',raw:line});}else{unparsed.push(line);}}); const currentDate=new Date(); currentDate.setHours(0,0,0,0); const todayTime=currentDate.getTime(); parsed.sort((a,b)=>{const at=new Date(a.date+'T00:00:00').getTime(),bt=new Date(b.date+'T00:00:00').getTime(),ap=at<todayTime,bp=bt<todayTime;if(ap!==bp)return ap?1:-1;if(!ap)return at-bt;return bt-at;}); let html=''; parsed.forEach(item=>{const targetDate=new Date(item.date+'T00:00:00'); const diff=Math.ceil((targetDate-currentDate)/86400000); const dText=diff>0?`D-${diff}`:(diff===0?'D-Day':`D+${Math.abs(diff)}`); const dColor=diff<0?'#95a5a6':(diff<=3?'#e74c3c':'#3498db'); const dateText=(targetDate.getMonth()+1)+'월 '+targetDate.getDate()+'일'; html+=`<div style="margin-bottom:10px;padding:12px;background:#fff;border:1px solid #e0e0e0;border-radius:10px;"><strong style="color:${dColor};font-size:1.1em;margin-right:5px;">${dText}</strong> <strong style="color:#2c3e50;font-size:1.05em;">${esc(item.subject)} ${esc(item.type)}</strong> <span style="color:#7f8c8d;font-size:.9em;margin-left:5px;">${dateText}</span><span class="item-actions"><button class="btn-edit" data-date="${encodeURIComponent(item.date)}" data-line="${encodeURIComponent(item.raw)}" onclick="editHomeworkFromButton(this)">수정</button><button class="btn-delete" data-date="${encodeURIComponent(item.date)}" data-line="${encodeURIComponent(item.raw)}" onclick="deleteHomeworkFromButton(this)">삭제</button></span>${item.desc?`<div style="margin-top:5px;color:#555;font-size:.95em;">✔️ ${esc(item.desc)}</div>`:''}</div>`;}); if(unparsed.length) html+=(html?'<hr style="border:0;border-top:1px dashed #ddd;margin:15px 0;">':'')+`<div style="white-space:pre-wrap;line-height:1.5;color:#555;padding:5px;">${esc(unparsed.join('\n'))}</div>`; document.getElementById('homeworkContent').innerHTML=html; }
+function renderHomework() {
+  const box = document.getElementById('homeworkContent');
+  if (!window.currentRawHomework) {
+    box.innerHTML = '<div class="empty-message">입력된 평가/숙제가 없습니다. 🎉</div>';
+    return;
+  }
+
+  const lines = window.currentRawHomework.split('\n');
+  const parsed = [];
+  const unparsed = [];
+  lines.forEach(line => {
+    if (!line.trim()) return;
+    const parts = line.split(' | ');
+    if (parts.length >= 3 && !isNaN(Date.parse(parts[0]))) {
+      parsed.push({
+        date: parts[0],
+        type: parts[1],
+        subject: parts[2],
+        desc: parts[3] || '',
+        raw: line
+      });
+    } else {
+      unparsed.push(line);
+    }
+  });
+
+  const currentDate = new Date();
+  currentDate.setHours(0, 0, 0, 0);
+  const todayTime = currentDate.getTime();
+
+  parsed.sort((a, b) => {
+    const at = new Date(a.date + 'T00:00:00').getTime();
+    const bt = new Date(b.date + 'T00:00:00').getTime();
+    const ap = at < todayTime;
+    const bp = bt < todayTime;
+    if (ap !== bp) return ap ? 1 : -1;
+    if (!ap) return at - bt;
+    return bt - at;
+  });
+
+  let result = '';
+  parsed.forEach(item => {
+    const targetDate = new Date(item.date + 'T00:00:00');
+    const diff = Math.ceil((targetDate - currentDate) / 86400000);
+    const dText = diff > 0 ? `D-${diff}` : (diff === 0 ? 'D-Day' : `D+${Math.abs(diff)}`);
+    const dColor = diff < 0 ? '#95a5a6' : (diff <= 3 ? '#e74c3c' : '#3498db');
+    const dateText = (targetDate.getMonth() + 1) + '월 ' + targetDate.getDate() + '일';
+
+    result += `<div class="homework-item">
+      <div class="homework-main">
+        <strong style="color:${dColor};font-size:1.1em;">${dText}</strong>
+        <strong style="color:#2c3e50;font-size:1.05em;">${esc(item.subject)} ${esc(item.type)}</strong>
+        <span class="homework-date">${dateText}</span>
+        <span class="item-actions">
+          <button class="btn-edit" data-date="${encodeURIComponent(item.date)}" data-line="${encodeURIComponent(item.raw)}" onclick="editHomeworkFromButton(this)">수정</button>
+          <button class="btn-delete" data-date="${encodeURIComponent(item.date)}" data-line="${encodeURIComponent(item.raw)}" onclick="deleteHomeworkFromButton(this)">삭제</button>
+        </span>
+      </div>
+      ${item.desc ? `<div class="homework-description">✔️ ${esc(item.desc)}</div>` : ''}
+    </div>`;
+  });
+
+  if (unparsed.length) {
+    result += (result ? '<hr style="border:0;border-top:1px dashed #ddd;margin:15px 0;">' : '') +
+      `<div style="white-space:pre-wrap;line-height:1.5;color:#555;padding:5px;">${esc(unparsed.join('\n'))}</div>`;
+  }
+  box.innerHTML = result;
+}
 function postDataToGAS(dataObj,successMsg,afterRequest) { fetch(GAS_URL,{method:'POST',body:JSON.stringify(dataObj)}).then(res=>res.json()).then(res=>{if(res.status==='success'){alert('✅ '+successMsg);if(afterRequest)afterRequest();if(['saveNotice','addHomework','updateHomework','deleteHomework','addAttendance','updateAttendance','deleteAttendance'].includes(dataObj.action))fetchNotice();}else alert('❌ '+(res.message||'저장 실패'));}).catch(()=>{alert('✅ 저장이 요청되었습니다. 잠시 후 새로고침해 주세요.');setTimeout(()=>{if(afterRequest)afterRequest();fetchNotice();},1000);}); }
 function openDownloadModal(){document.getElementById('downloadModal').style.display='block';} function closeDownloadModal(){document.getElementById('downloadModal').style.display='none';}
 function openHwModal(){document.getElementById('hwEditLine').value='';document.getElementById('hwEditDate').value='';document.getElementById('hwSubject').value='';document.getElementById('hwDate').value='';document.getElementById('hwDesc').value='';document.querySelector('input[name="hwType"][value="수행평가"]').checked=true;document.getElementById('hwModal').style.display='block';} function closeHwModal(){document.getElementById('hwModal').style.display='none';}
