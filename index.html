@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>즐거운 3학년 7반 알림장</title>
+  <style>
+    body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; background-color: #f7f9fc; margin: 0; padding: 15px; color: #333; }
+    .header { text-align: center; background: #fff; padding: 20px 10px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,.05); margin-bottom: 20px; position: relative; }
+    .header h1 { margin: 0; font-size: 1.5em; color: #4a4a4a; }
+    .date-display { font-size: 1.1em; font-weight: bold; color: #2196f3; margin-top: 10px; }
+    .teacher-btn { position: absolute; right: 15px; top: 15px; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg,#ff9a9e 0%,#fecfef 100%); color: white; font-size: 24px; font-weight: bold; border: none; cursor: pointer; box-shadow: 0 4px 6px rgba(255,154,158,.4); }
+    .search-box { text-align: center; margin-bottom: 20px; }
+    .search-box input { width: 50%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; }
+    .search-box button { padding: 10px 15px; border-radius: 10px; border: none; background-color: #a1c4fd; color: white; font-weight: bold; cursor: pointer; }
+    .section { background: #fff; margin-bottom: 20px; border-radius: 15px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,.03); }
+    .section h2 { font-size: 1.2em; color: #2c3e50; margin-top: 0; border-bottom: 2px dashed #eee; padding-bottom: 10px; }
+    .modal-overlay { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.55); overflow-y: auto; padding: 20px 12px; box-sizing: border-box; }
+    .modal-content { background: #fff; max-width: 420px; margin: 4vh auto; padding: 20px; border-radius: 15px; box-sizing: border-box; }
+    .modal-content label { display: block; margin-top: 10px; font-weight: bold; }
+    .radio-group { display: flex; gap: 18px; align-items: center; margin: 8px 0; }
+    .radio-group label { display: inline-flex; align-items: center; gap: 5px; margin: 0; font-weight: normal; }
+    .detail-input { min-height: 110px; resize: vertical; }
+    .close-btn { background: #b0b8c1; }
+    .content-box { min-height: 0; white-space: pre-wrap; margin-top: 10px; line-height: 1.5; color: #555; background: #fdfdfd; padding: 6px; border-radius: 8px; }
+    input[type="text"], input[type="date"], textarea, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #e0e0e0; border-radius: 10px; box-sizing: border-box; font-family: inherit; background-color: #fafafa; }
+    button.action-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 1em; font-weight: bold; color: white; cursor: pointer; margin-top: 5px; }
+    .btn-blue { background: linear-gradient(to right,#4facfe 0%,#00f2fe 100%); }
+    .btn-orange { background: linear-gradient(to right,#f6d365 0%,#fda085 100%); }
+    .btn-edit, .btn-delete { border: none; border-radius: 7px; padding: 5px 8px; color: white; cursor: pointer; font-size: .8em; margin-left: 5px; }
+    .btn-edit { background: #3498db; } .btn-delete { background: #e74c3c; }
+
+    .item-actions { margin: 0; padding: 0; white-space: nowrap; display: flex; align-items: center; justify-content: flex-end; gap: 4px; flex: 0 0 auto; }
+    #homeworkContent.content-box, #attendanceContent.content-box { min-height: 0 !important; height: auto !important; padding: 0 !important; margin-top: 6px; background: transparent; }
+    .homework-item { display: block; box-sizing: border-box; width: 100%; height: auto !important; min-height: 0 !important; margin: 0 0 6px; padding: 6px 8px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; line-height: 1.25; overflow: visible; }
+    .homework-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: 6px; width: 100%; min-height: 0; }
+    .homework-info { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 5px; min-width: 0; line-height: 1.25; overflow-wrap: anywhere; }
+    .homework-dday, .homework-title, .homework-date { min-width: 0; }
+    .homework-title { overflow-wrap: anywhere; word-break: keep-all; }
+    .homework-date { color: #7f8c8d; font-size: .9em; white-space: nowrap; }
+    .homework-description { margin-top: 3px; padding: 0; color: #555; font-size: .95em; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .btn-edit, .btn-delete { border: none; border-radius: 7px; padding: 5px 8px; color: white; cursor: pointer; font-size: .8em; margin: 0; line-height: 1.2; }
+    #homeworkContent > .homework-item, #attendanceContent > .attendance-item { height: auto !important; min-height: 0 !important; }
+    .attendance-item { color: #000; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 6px 8px; margin: 0 0 6px; line-height: 1.3; height: auto !important; min-height: 0 !important; }
+    .attendance-main { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 6px; color: #000; min-width: 0; }
+    .attendance-main > .attendance-name, .attendance-main > .attendance-period, .attendance-main > .attendance-type { min-width: 0; }
+    .attendance-main > .attendance-name { grid-column: 1; }
+    .attendance-main > .attendance-period, .attendance-main > .attendance-type { grid-column: 1; }
+    .attendance-main > .item-actions { grid-column: 2; grid-row: 1 / span 3; }
+    .attendance-name { font-weight: bold; color: #000; } .attendance-period, .attendance-type { color: #000; white-space: nowrap; }
+    .attendance-reason { margin-top: 3px; color: #000; white-space: pre-wrap; line-height: 1.35; overflow-wrap: anywhere; }
+    .empty-message { color: #333; }
+  </style>
+</head>
+<body>
+  <div class="header"><h1>🏫 즐거운 3학년 7반 알림장 🎒</h1><div class="date-display" id="todayDate">📅 불러오는 중...</div><button class="teacher-btn" onclick="openTeacherModal()">+</button></div>
+  <div class="search-box"><input type="date" id="searchDate"><button onclick="fetchNotice()">🔍 이전 알림장 조회</button></div>
+  <div class="section"><h2>📢 1. 전달사항</h2><div id="noticeContent" class="content-box">불러오는 중...</div></div>
+  <div class="section">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px dashed #eee;padding-bottom:10px;"><h2 style="border:none;padding:0;margin:0;">📋 2. 출결서류 안내</h2><button onclick="openDownloadModal()" class="action-btn btn-blue" style="width:auto;padding:8px 12px;margin:0;font-size:.85em;border-radius:8px;">📥 서류 다운로드</button></div>
+    <div id="attendanceContent" class="content-box">불러오는 중...</div>
+    <button class="action-btn btn-blue" onclick="openAttendanceModal()">➕ 출결 서류 추가</button>
+  </div>
+  <div class="section"><h2>✍️ 3. 수행평가 / 숙제 안내</h2><div id="homeworkContent" class="content-box">불러오는 중...</div><button class="action-btn btn-blue" onclick="openHwModal()">✨ 평가/숙제 추가하기</button></div>
+  <div class="section"><h2>🤫 4. 익명 건의함 <span id="pendingSuggestionStars" style="float:right;color:#f6b63c;font-size:.9em;letter-spacing:1px;"></span></h2><input type="text" id="suggestionName" placeholder="👤 이름 (안 적으면 익명으로 쉿!)"><textarea id="suggestionContent" rows="3" placeholder="💬 건의할 내용을 자유롭게 적어주세요"></textarea><button class="action-btn btn-orange" onclick="sendSuggestion()">🚀 선생님께 보내기</button></div>
+
+  <div id="downloadModal" class="modal-overlay"><div class="modal-content" style="text-align:center;"><h2 style="margin-top:0;">📥 서류 다운로드</h2><p style="color:#666;font-size:.9em;margin-bottom:20px;">필요한 양식을 선택하여 다운로드하세요.</p><a href="출결신고서.pdf" download class="action-btn btn-blue" style="display:block;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">📄 출결신고서</a><a href="체험학습 신청서.pdf" download class="action-btn btn-blue" style="display:block;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">📄 체험학습 신청서</a><a href="체험학습 보고서.pdf" download class="action-btn btn-blue" style="display:block;text-decoration:none;margin-bottom:15px;box-sizing:border-box;">📄 체험학습 보고서</a><button class="action-btn close-btn" onclick="closeDownloadModal()">❌ 닫기</button></div></div>
+
+  <div id="hwModal" class="modal-overlay"><div class="modal-content"><h2 style="margin-top:0;text-align:center;">📝 평가/숙제 추가</h2><input type="hidden" id="hwEditLine"><input type="hidden" id="hwEditDate"><label>📌 종류</label><div class="radio-group"><label><input type="radio" name="hwType" value="수행평가" checked> 수행평가</label><label><input type="radio" name="hwType" value="숙제"> 숙제</label></div><label>📚 과목명</label><input type="text" id="hwSubject" placeholder="예: 수학, 국어"><label>📅 제출/평가 날짜</label><input type="date" id="hwDate"><label>💬 세부 내용 (선택)</label><textarea id="hwDesc" class="detail-input" rows="6" placeholder="예: 교과서 50쪽 풀이
+여러 줄로 자세히 입력할 수 있습니다."></textarea><button class="action-btn btn-blue" onclick="submitHw()">✅ 완료</button><button class="action-btn close-btn" onclick="closeHwModal()">❌ 취소</button></div></div>
+
+  <div id="attendanceModal" class="modal-overlay"><div class="modal-content"><h2 style="margin-top:0;text-align:center;">📋 출결 서류</h2><input type="hidden" id="attendanceEditId"><label>1. 이름</label><input type="text" id="attendanceName" placeholder="이름을 입력하세요"><label>2. 기간</label><div style="display:flex;gap:8px;align-items:center;"><input type="date" id="attendanceStartDate"><span>~</span><input type="date" id="attendanceEndDate"></div><label>3. 결석 종류</label><select id="attendanceType"><option value="결석">결석</option><option value="지각">지각</option><option value="조퇴">조퇴</option><option value="결과">결과</option><option value="기타">기타</option></select><label>4. 이유</label><textarea id="attendanceReason" rows="3" placeholder="이유를 입력하세요"></textarea><button class="action-btn btn-blue" onclick="submitAttendance()">✅ 저장</button><button class="action-btn close-btn" onclick="closeAttendanceModal()">❌ 취소</button></div></div>
+
+  <div id="teacherModal" class="modal-overlay"><div class="modal-content"><h2 style="margin-top:0;text-align:center;">👩‍🏫 교사 알림장 작성</h2><label>📅 날짜</label><input type="date" id="tDate"><label>📢 전달사항</label><textarea id="tNotice" rows="3"></textarea><label>📋 출결서류 안내</label><textarea id="tAttendance" rows="2"></textarea><label>✍️ 수행평가/숙제</label><textarea id="tHomework" rows="3"></textarea><div style="font-size:.8em;color:#888;margin-top:-5px;margin-bottom:10px;">※ 디데이를 위해 'YYYY-MM-DD | 종류 | 과목 | 내용' 형식을 유지해주세요.</div><button class="action-btn btn-blue" onclick="saveTeacherNotice()">💾 저장하기</button><button class="action-btn close-btn" onclick="closeTeacherModal()">❌ 닫기</button></div></div>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyE5JWHKIXY8SCf9wnV_dwTMkjmmt8QygKLuDdbkeQ7h_DseimR--IN6GhfQH-fLOvIAg/exec";
+window.currentRawNotice = ""; window.currentRawAttendance = ""; window.currentRawHomework = ""; window.currentAttendanceDocuments = [];
+const today = new Date(); const todayStr = today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,'0')+"-"+String(today.getDate()).padStart(2,'0');
+document.getElementById('todayDate').innerText = `📅 ${today.getFullYear()}년 ${today.getMonth()+1}월 ${today.getDate()}일`; document.getElementById('searchDate').value = todayStr;
+window.onload = () => { fetchNotice(); fetchSuggestionCount(); setInterval(fetchSuggestionCount, 30000); };
+function esc(value) { const d=document.createElement('div'); d.textContent=value==null?'':String(value); return d.innerHTML; }
+function fetchNotice() { const date=document.getElementById('searchDate').value||todayStr; ['noticeContent','attendanceContent','homeworkContent'].forEach(id=>document.getElementById(id).innerText='불러오는 중... ⏳'); fetch(GAS_URL+'?action=getNotice&date='+encodeURIComponent(date)).then(res=>res.json()).then(data=>{ window.currentRawNotice=data.notice||''; window.currentRawAttendance=data.attendance||''; window.currentRawHomework=data.homework||''; window.currentAttendanceDocuments=data.attendanceDocuments||[]; document.getElementById('noticeContent').innerText=window.currentRawNotice||'입력된 전달사항이 없습니다. 😊'; renderAttendanceDocuments(); renderHomework(); }).catch(()=>{ ['noticeContent','attendanceContent','homeworkContent'].forEach(id=>document.getElementById(id).innerText='데이터를 불러오지 못했습니다.'); }); }
+function fetchSuggestionCount() { fetch(GAS_URL+'?action=getSuggestionCount').then(res=>res.json()).then(data=>{ const box=document.getElementById('pendingSuggestionStars'); const count=Number(data.uncheckedCount)||0; box.textContent=count?' '+'★'.repeat(count):''; box.title=count?'처리하지 않은 건의사항 '+count+'개':''; }).catch(()=>{}); }
+function formatDisplayDate(value) {
+  const text = String(value || '').trim();
+  const match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (match) return Number(match[2]) + '월 ' + Number(match[3]) + '일';
+  const parsed = new Date(text);
+  if (!isNaN(parsed.getTime())) return (parsed.getMonth() + 1) + '월 ' + parsed.getDate() + '일';
+  return text;
+}
+function formatPeriod(start, end) {
+  const startText = formatDisplayDate(start);
+  const endText = formatDisplayDate(end);
+  return startText === endText ? startText : startText + ' ~ ' + endText;
+}
+function renderAttendanceDocuments() {
+  const box = document.getElementById('attendanceContent');
+  const documents = [...window.currentAttendanceDocuments].sort((a, b) => {
+    const byStart = String(a.startDate || '').localeCompare(String(b.startDate || ''));
+    return byStart || String(a.endDate || '').localeCompare(String(b.endDate || ''));
+  });
+  if (!documents.length) {
+    box.innerHTML = '<div class="empty-message">입력된 출결 서류가 없습니다.</div>';
+    return;
+  }
+  box.innerHTML = documents.map(item => `<div class="attendance-item">
+    <div class="attendance-main">
+      <span class="attendance-name">${esc(item.name)}</span>
+      <span class="attendance-period">${esc(formatPeriod(item.startDate, item.endDate))}</span>
+      <span class="attendance-type">${esc(item.absenceType)}</span>
+      <span class="item-actions">
+        <button class="btn-edit" data-id="${encodeURIComponent(item.id)}" onclick="editAttendanceFromButton(this)">수정</button>
+        <button class="btn-delete" data-id="${encodeURIComponent(item.id)}" onclick="deleteAttendanceFromButton(this)">삭제</button>
+      </span>
+    </div>
+    <div class="attendance-reason">${esc(item.reason)}</div>
+  </div>`).join('');
+}
+function renderHomework() {
+  const box = document.getElementById('homeworkContent');
+  if (!window.currentRawHomework) {
+    box.innerHTML = '<div class="empty-message">입력된 평가/숙제가 없습니다. 🎉</div>';
+    return;
+  }
+
+  // 한 항목의 세부 내용이 여러 줄이어도 다음 날짜 항목이 나올 때까지
+  // 이전 항목의 desc에 이어 붙입니다.
+  const lines = String(window.currentRawHomework).replace(/\r\n?/g, '\n').split('\n');
+  const parsed = [];
+  const unparsed = [];
+  const dateLine = /^\s*\d{4}-\d{2}-\d{2}\s*\|/;
+  let current = null;
+
+  lines.forEach(line => {
+    const parts = line.split(' | ');
+    const isHomeworkLine = dateLine.test(line) && parts.length >= 3 && !isNaN(Date.parse(parts[0].trim()));
+
+    if (isHomeworkLine) {
+      current = {
+        date: parts[0].trim(),
+        type: parts[1].trim(),
+        subject: parts[2].trim(),
+        desc: parts.slice(3).join(' | '),
+        raw: line
+      };
+      parsed.push(current);
+    } else if (current) {
+      // 줄바꿈을 포함한 세부 내용을 그대로 보존합니다.
+      current.desc += '\n' + line;
+      current.raw += '\n' + line;
+    } else if (line.trim()) {
+      // 날짜 항목보다 앞에 있는 정말 해석할 수 없는 내용만 별도로 표시합니다.
+      unparsed.push(line);
+    }
+  });
+
+  // 각 항목의 raw는 현재 desc를 반영하도록 다시 구성합니다.
+  parsed.forEach(item => {
+    item.raw = `${item.date} | ${item.type} | ${item.subject} | ${item.desc}`;
+  });
+
+  const currentDate = new Date();
+  currentDate.setHours(0, 0, 0, 0);
+  const todayTime = currentDate.getTime();
+
+  parsed.sort((a, b) => {
+    const at = new Date(a.date + 'T00:00:00').getTime();
+    const bt = new Date(b.date + 'T00:00:00').getTime();
+    const ap = at < todayTime;
+    const bp = bt < todayTime;
+    if (ap !== bp) return ap ? 1 : -1;
+    if (!ap) return at - bt;
+    return bt - at;
+  });
+
+  let result = '';
+  parsed.forEach(item => {
+    const targetDate = new Date(item.date + 'T00:00:00');
+    const diff = Math.ceil((targetDate - currentDate) / 86400000);
+    const dText = diff > 0 ? `D-${diff}` : (diff === 0 ? 'D-Day' : `D+${Math.abs(diff)}`);
+    const dColor = diff < 0 ? '#95a5a6' : (diff <= 3 ? '#e74c3c' : '#3498db');
+    const dateText = (targetDate.getMonth() + 1) + '월 ' + targetDate.getDate() + '일';
+
+    result += `<div class="homework-item">
+      <div class="homework-header">
+        <div class="homework-info">
+          <strong class="homework-dday" style="color:${dColor};font-size:1.1em;">${dText}</strong>
+          <strong class="homework-title" style="color:#2c3e50;font-size:1.05em;">${esc(item.subject)} ${esc(item.type)}</strong>
+          <span class="homework-date">${dateText}</span>
+        </div>
+        <span class="item-actions">
+          <button class="btn-edit" data-date="${encodeURIComponent(item.date)}" data-line="${encodeURIComponent(item.raw)}" onclick="editHomeworkFromButton(this)">수정</button>
+          <button class="btn-delete" data-date="${encodeURIComponent(item.date)}" data-line="${encodeURIComponent(item.raw)}" onclick="deleteHomeworkFromButton(this)">삭제</button>
+        </span>
+      </div>
+      ${item.desc.trim() ? `<div class="homework-description">✔️ ${esc(item.desc)}</div>` : ''}
+    </div>`;
+  });
+
+  if (unparsed.length) {
+    result += (result ? '<hr style="border:0;border-top:1px dashed #ddd;margin:8px 0;">' : '') +
+      `<div style="white-space:pre-wrap;line-height:1.5;color:#555;padding:5px;">${esc(unparsed.join('\n'))}</div>`;
+  }
+  box.innerHTML = result || '<div class="empty-message">입력된 평가/숙제가 없습니다. 🎉</div>';
+}
+function postDataToGAS(dataObj,successMsg,afterRequest) { fetch(GAS_URL,{method:'POST',body:JSON.stringify(dataObj)}).then(res=>res.json()).then(res=>{if(res.status==='success'){alert('✅ '+successMsg);if(afterRequest)afterRequest();if(['saveNotice','addHomework','updateHomework','deleteHomework','addAttendance','updateAttendance','deleteAttendance'].includes(dataObj.action))fetchNotice();}else alert('❌ '+(res.message||'저장 실패'));}).catch(()=>{alert('✅ 저장이 요청되었습니다. 잠시 후 새로고침해 주세요.');setTimeout(()=>{if(afterRequest)afterRequest();fetchNotice();},1000);}); }
+function openDownloadModal(){document.getElementById('downloadModal').style.display='block';} function closeDownloadModal(){document.getElementById('downloadModal').style.display='none';}
+function openHwModal(){document.getElementById('hwEditLine').value='';document.getElementById('hwEditDate').value='';document.getElementById('hwSubject').value='';document.getElementById('hwDate').value='';document.getElementById('hwDesc').value='';document.querySelector('input[name="hwType"][value="수행평가"]').checked=true;document.getElementById('hwModal').style.display='block';} function closeHwModal(){document.getElementById('hwModal').style.display='none';}
+function submitHw(){const type=document.querySelector('input[name="hwType"]:checked').value,subject=document.getElementById('hwSubject').value.trim(),date=document.getElementById('hwDate').value,desc=document.getElementById('hwDesc').value.trim();if(!subject||!date){alert('과목명과 날짜를 꼭 입력해주세요.');return;}const newLine=`${date} | ${type} | ${subject} | ${desc}`;const oldLine=document.getElementById('hwEditLine').value;const oldDate=document.getElementById('hwEditDate').value;if(oldLine){postDataToGAS({action:'updateHomework',date:oldDate,oldLine:oldLine,newLine:newLine},'평가/숙제가 수정되었습니다!',closeHwModal);}else{postDataToGAS({action:'addHomework',startDate:todayStr,endDate:date,homeworkLine:newLine},'평가/숙제가 등록되었습니다!',closeHwModal);} }
+function editHomeworkFromButton(button) {
+  editHomework(decodeURIComponent(button.dataset.date || ''), decodeURIComponent(button.dataset.line || ''));
+}
+function deleteHomeworkFromButton(button) {
+  deleteHomework(decodeURIComponent(button.dataset.date || ''), decodeURIComponent(button.dataset.line || ''));
+}
+function editAttendanceFromButton(button) {
+  editAttendance(decodeURIComponent(button.dataset.id || ''));
+}
+function deleteAttendanceFromButton(button) {
+  deleteAttendance(decodeURIComponent(button.dataset.id || ''));
+}
+function editHomework(date,line){const parts=line.split(' | ');document.getElementById('hwEditDate').value=date;document.getElementById('hwEditLine').value=line;document.getElementById('hwDate').value=parts[0]||date;const type=parts[1]||'수행평가';const radio=document.querySelector(`input[name="hwType"][value="${CSS.escape(type)}"]`);if(radio)radio.checked=true;document.getElementById('hwSubject').value=parts[2]||'';document.getElementById('hwDesc').value=parts.slice(3).join(' | ')||'';document.getElementById('hwModal').style.display='block';}
+function deleteHomework(date,line){if(!confirm('이 수행평가/숙제를 삭제하시겠습니까?'))return;postDataToGAS({action:'deleteHomework',date:date,line:line},'삭제되었습니다.');}
+function openAttendanceModal(item){document.getElementById('attendanceEditId').value=item?item.id:'';document.getElementById('attendanceName').value=item?item.name:'';document.getElementById('attendanceStartDate').value=item?item.startDate:todayStr;document.getElementById('attendanceEndDate').value=item?item.endDate:todayStr;document.getElementById('attendanceType').value=item?item.absenceType:'결석';document.getElementById('attendanceReason').value=item?item.reason:'';document.getElementById('attendanceModal').style.display='block';} function closeAttendanceModal(){document.getElementById('attendanceModal').style.display='none';}
+function submitAttendance(){const id=document.getElementById('attendanceEditId').value,name=document.getElementById('attendanceName').value.trim(),startDate=document.getElementById('attendanceStartDate').value,endDate=document.getElementById('attendanceEndDate').value,absenceType=document.getElementById('attendanceType').value,reason=document.getElementById('attendanceReason').value.trim();if(!name||!startDate||!endDate||!reason){alert('이름, 기간, 결석 종류, 이유를 모두 입력해주세요.');return;}if(endDate<startDate){alert('종료일은 시작일보다 빠를 수 없습니다.');return;}postDataToGAS({action:id?'updateAttendance':'addAttendance',id:id,name:name,startDate:startDate,endDate:endDate,absenceType:absenceType,reason:reason},id?'출결 서류가 수정되었습니다.':'출결 서류가 등록되었습니다.',closeAttendanceModal);}
+function editAttendance(id){const item=window.currentAttendanceDocuments.find(x=>String(x.id)===String(id));if(item)openAttendanceModal(item);} function deleteAttendance(id){if(!confirm('이 출결 서류를 삭제하시겠습니까?'))return;postDataToGAS({action:'deleteAttendance',id:id},'출결 서류가 삭제되었습니다.');}
+function sendSuggestion(){const name=document.getElementById('suggestionName').value||'익명',content=document.getElementById('suggestionContent').value;if(!content){alert('내용을 입력해주세요.');return;}postDataToGAS({action:'saveSuggestion',name:name,content:content},'선생님께 건의사항이 잘 도착했습니다!',()=>{document.getElementById('suggestionName').value='';document.getElementById('suggestionContent').value='';fetchSuggestionCount();});}
+function openTeacherModal(){const pw=prompt('선생님 비밀번호를 입력하세요. 🔑');if(pw!=='7755'){alert('비밀번호가 틀렸습니다.');return;}document.getElementById('teacherModal').style.display='block';document.getElementById('tDate').value=document.getElementById('searchDate').value;document.getElementById('tNotice').value=window.currentRawNotice;document.getElementById('tAttendance').value=window.currentRawAttendance;document.getElementById('tHomework').value=window.currentRawHomework;} function closeTeacherModal(){document.getElementById('teacherModal').style.display='none';}
+function saveTeacherNotice(){postDataToGAS({action:'saveNotice',date:document.getElementById('tDate').value,notice:document.getElementById('tNotice').value,attendance:document.getElementById('tAttendance').value,homework:document.getElementById('tHomework').value},'알림장이 성공적으로 저장되었습니다!',closeTeacherModal);}
+</script>
+</body>
+</html>
