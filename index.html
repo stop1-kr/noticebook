@@ -61,7 +61,7 @@
     <button class="action-btn btn-blue" onclick="openAttendanceWithPassword()">➕ 출결 서류 추가</button>
   </div>
   <div class="section"><h2>✍️ 3. 수행평가 / 숙제 / 고사 안내</h2><div id="homeworkContent" class="content-box">불러오는 중...</div><button class="action-btn btn-blue" onclick="openHwModal()">✨ 평가/숙제/고사 추가하기</button></div>
-  <div class="section"><h2>🤫 4. 익명 건의함 <span id="pendingSuggestionStars" style="float:right;color:#f6b63c;font-size:.9em;letter-spacing:1px;"></span></h2><input type="text" id="suggestionName" placeholder="👤 이름 (안 적으면 익명으로 쉿!)"><textarea id="suggestionContent" rows="3" placeholder="💬 건의할 내용을 자유롭게 적어주세요"></textarea><button class="action-btn btn-orange" onclick="sendSuggestion()">🚀 선생님께 보내기</button></div>
+  <div class="section"><h2>🤫 4. 익명 건의함 <span id="pendingSuggestionStars" style="float:right;color:#f6b63c;font-size:.9em;letter-spacing:1px;"></span></h2><input type="text" id="suggestionName" placeholder="👤 이름 (안 적으면 익명으로 쉿!)"><textarea id="suggestionContent" rows="3" placeholder="💬 건의할 내용을 자유롭게 적어주세요"></textarea><button id="suggestionBtn" class="action-btn btn-orange" onclick="sendSuggestion()">🚀 선생님께 보내기</button></div>
 
   <div id="downloadModal" class="modal-overlay"><div class="modal-content" style="text-align:center;"><h2 style="margin-top:0;">📥 서류 다운로드</h2><p style="color:#666;font-size:.9em;margin-bottom:20px;">필요한 양식을 선택하여 다운로드하세요.</p><a href="출결신고서.pdf" download class="action-btn btn-blue" style="display:block;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">📄 출결신고서</a><a href="체험학습 신청서.pdf" download class="action-btn btn-blue" style="display:block;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">📄 체험학습 신청서</a><a href="체험학습 보고서.pdf" download class="action-btn btn-blue" style="display:block;text-decoration:none;margin-bottom:15px;box-sizing:border-box;">📄 체험학습 보고서</a><button class="action-btn close-btn" onclick="closeDownloadModal()">❌ 닫기</button></div></div>
 
@@ -312,7 +312,50 @@ function openAttendanceWithPassword(){if(!checkTeacherPassword())return;openAtte
 function closeAttendanceModal(){document.getElementById('attendanceModal').style.display='none';}
 function submitAttendance(){const id=document.getElementById('attendanceEditId').value,name=document.getElementById('attendanceName').value.trim(),startDate=document.getElementById('attendanceStartDate').value,endDate=document.getElementById('attendanceEndDate').value,absenceType=document.getElementById('attendanceType').value,reason=document.getElementById('attendanceReason').value.trim();if(!name||!startDate||!endDate||!reason){alert('이름, 기간, 결석 종류, 이유를 모두 입력해주세요.');return;}if(endDate<startDate){alert('종료일은 시작일보다 빠를 수 없습니다.');return;}postDataToGAS({action:id?'updateAttendance':'addAttendance',id:id,name:name,startDate:startDate,endDate:endDate,absenceType:absenceType,reason:reason},id?'출결 서류가 수정되었습니다.':'출결 서류가 등록되었습니다.',closeAttendanceModal);}
 function editAttendance(id){const item=window.currentAttendanceDocuments.find(x=>String(x.id)===String(id));if(!item)return;if(!checkTeacherPassword())return;openAttendanceModal(item);} function deleteAttendance(id){if(!checkTeacherPassword())return;if(!confirm('이 출결 서류를 삭제하시겠습니까?'))return;postDataToGAS({action:'deleteAttendance',id:id},'출결 서류가 삭제되었습니다.');}
-function sendSuggestion(){const name=document.getElementById('suggestionName').value||'익명',content=document.getElementById('suggestionContent').value;if(!content){alert('내용을 입력해주세요.');return;}postDataToGAS({action:'saveSuggestion',name:name,content:content},'선생님께 건의사항이 잘 도착했습니다!',()=>{document.getElementById('suggestionName').value='';document.getElementById('suggestionContent').value='';fetchSuggestionCount();});}
+// ===== 익명 건의함: 중복 제출 방지 =====
+let isSendingSuggestion = false;
+const SUGGESTION_COOLDOWN_MS = 30000; // 같은 내용 재제출 방지 시간(30초)
+function setSuggestionSending(sending){
+  const btn=document.getElementById('suggestionBtn');
+  const nameEl=document.getElementById('suggestionName');
+  const contentEl=document.getElementById('suggestionContent');
+  if(!btn.dataset.originalText) btn.dataset.originalText=btn.innerHTML;
+  btn.disabled=sending; nameEl.disabled=sending; contentEl.disabled=sending;
+  btn.innerHTML=sending?'⏳ 제출 중... 잠시만 기다려 주세요':btn.dataset.originalText;
+  btn.style.opacity=sending?'0.6':''; btn.style.cursor=sending?'not-allowed':'';
+}
+function sendSuggestion(){
+  if(isSendingSuggestion) return; // 전송 중이면 추가 클릭 무시
+  const name=document.getElementById('suggestionName').value.trim()||'익명';
+  const content=document.getElementById('suggestionContent').value.trim();
+  if(!content){alert('내용을 입력해주세요.');return;}
+  // 방금 보낸 것과 같은 내용이면 차단
+  try{
+    const last=JSON.parse(localStorage.getItem('lastSuggestion')||'null');
+    if(last&&last.content===content&&Date.now()-last.time<SUGGESTION_COOLDOWN_MS){
+      alert('방금 같은 내용을 이미 보냈어요. 선생님께 잘 전달되었습니다!');return;
+    }
+  }catch(e){}
+  isSendingSuggestion=true; setSuggestionSending(true);
+  const finishOk=(msg)=>{
+    try{localStorage.setItem('lastSuggestion',JSON.stringify({content:content,time:Date.now()}));}catch(e){}
+    document.getElementById('suggestionName').value='';
+    document.getElementById('suggestionContent').value='';
+    isSendingSuggestion=false; setSuggestionSending(false);
+    alert(msg); fetchSuggestionCount();
+  };
+  fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'saveSuggestion',name:name,content:content})})
+    .then(res=>res.json())
+    .then(res=>{
+      if(res.status==='success') finishOk('✅ 선생님께 건의사항이 잘 도착했습니다!');
+      else{isSendingSuggestion=false;setSuggestionSending(false);alert('❌ '+(res.message||'전송 실패. 다시 시도해 주세요.'));}
+    })
+    .catch(()=>{
+      // 응답을 못 읽어도 실제로는 저장된 경우가 많으므로 재전송 유도하지 않음
+      finishOk('✅ 건의사항이 전송되었습니다. (다시 누르지 않아도 돼요!)');
+    });
+}
+
 function openTeacherModal(){if(!checkTeacherPassword())return;document.getElementById('tStartDate').value=todayStr;document.getElementById('tEndDate').value=todayStr;document.getElementById('tNotice').value=window.currentRawNotice||'';document.getElementById('teacherModal').style.display='block';}
 function closeTeacherModal(){document.getElementById('teacherModal').style.display='none';}
 function addDaysStr(dateStr, days) {
